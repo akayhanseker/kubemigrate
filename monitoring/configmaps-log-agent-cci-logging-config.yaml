@@ -1,0 +1,25 @@
+apiVersion: v1
+data:
+  output.conf: |
+    [OUTPUT]
+        Host 10.247.67.134
+        Match *
+        Name forward
+        Port 8006
+        Retry_Limit False
+        tls on
+        tls.ca_file ${sandbox_volume_log-agent-cert}/caCert
+        tls.crt_file ${sandbox_volume_log-agent-cert}/serverCert
+        tls.key_file ${sandbox_volume_log-agent-cert}/serverKey
+        tls.debug 3
+        tls.verify on
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2025-08-01T10:27:37Z"
+  labels:
+    app: log-operator
+    logconf.k8s.io/discovery: "true"
+  name: log-agent-cci-logging-config
+  namespace: monitoring
+  resourceVersion: "23864"
+  uid: 0acee09e-3d53-4603-b91c-e250b641ae72
