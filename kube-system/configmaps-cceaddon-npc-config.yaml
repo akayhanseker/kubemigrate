@@ -1,0 +1,166 @@
+apiVersion: v1
+data:
+  npc-config.yaml: |
+    maxTaintedNode: 1
+    nodeConditionToTaint:
+      - condition:
+          type: CNIProblem
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: CRIProblem
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: ConntrackFullProblem
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: DiskHung
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: DiskProblem
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: DiskReadonly
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: DiskSlow
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: EmptyDirVolumeGroupStatusError
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: FDProblem
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: FrequentContainerdRestart
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: FrequentDockerRestart
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: FrequentKubeletRestart
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: KUBELETProblem
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: KUBEPROXYProblem
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: LocalPvVolumeGroupStatusError
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: MemoryProblem
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: MountPointProblem
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: NTPProblem
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: PIDProblem
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: ProcessD
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: ProcessZ
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: ResolvConfFileProblem
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: ScheduledEvent
+          status: "True"
+        taint:
+          effect: Info
+        enable: true
+      - condition:
+          type: SpotPriceNodeReclaimNotification
+          status: "True"
+        taint:
+          effect: NoExecute
+        maxTaintedNode: 100%
+        enable: true
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-npd
+    meta.helm.sh/release-namespace: kube-system
+  creationTimestamp: "2025-08-01T08:45:38Z"
+  labels:
+    app.kubernetes.io/instance: cceaddon-npd
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: npd
+    helm.sh/chart: npd-1.19.20
+    release: cceaddon-npd
+  name: cceaddon-npc-config
+  namespace: kube-system
+  resourceVersion: "619"
+  uid: 17a1d35d-e509-40f3-8443-238be3dfbec5
