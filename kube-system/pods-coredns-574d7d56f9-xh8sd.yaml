@@ -1,0 +1,231 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: ""
+    scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
+  creationTimestamp: "2025-08-01T08:45:39Z"
+  generateName: coredns-574d7d56f9-
+  labels:
+    app: coredns
+    k8s-app: coredns
+    kubernetes.io/evictcritical: ""
+    pod-template-hash: 574d7d56f9
+    release: cceaddon-coredns
+  name: coredns-574d7d56f9-xh8sd
+  namespace: kube-system
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: coredns-574d7d56f9
+    uid: a83cf967-8e87-4790-b9ae-64359eeee566
+  resourceVersion: "23696"
+  uid: 26cc4605-788e-43ac-989c-7362c91328f3
+spec:
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - coredns
+          topologyKey: topology.kubernetes.io/zone
+        weight: 100
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - coredns
+        topologyKey: kubernetes.io/hostname
+  containers:
+  - command:
+    - /bin/sh
+    - -c
+    - /coredns -conf=/etc/coredns/Corefile -rmem=udp#8388608 -wmem=udp#1048576
+    env:
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/coredns:1.30.30
+    imagePullPolicy: Always
+    lifecycle:
+      preStop:
+        exec:
+          command:
+          - sleep
+          - "5"
+    livenessProbe:
+      failureThreshold: 5
+      httpGet:
+        path: /health
+        port: 8080
+        scheme: HTTP
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    name: coredns
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /ready
+        port: 8081
+        scheme: HTTP
+      initialDelaySeconds: 3
+      periodSeconds: 5
+      successThreshold: 1
+      timeoutSeconds: 3
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+    securityContext:
+      capabilities:
+        add:
+        - NET_BIND_SERVICE
+        drop:
+        - all
+      readOnlyRootFilesystem: true
+      runAsUser: 10000
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /etc/coredns
+      name: config-volume
+    - mountPath: /tmp
+      name: tmp
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-48kgc
+      readOnly: true
+  dnsConfig:
+    options:
+    - name: single-request-reopen
+      value: ""
+    - name: timeout
+      value: "2"
+  dnsPolicy: Default
+  enableServiceLinks: true
+  nodeName: 192.168.0.108
+  preemptionPolicy: PreemptLowerPriority
+  priority: 2000000000
+  priorityClassName: system-cluster-critical
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    seccompProfile:
+      type: Unconfined
+  serviceAccount: coredns
+  serviceAccountName: coredns
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 60
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 60
+  volumes:
+  - emptyDir: {}
+    name: tmp
+  - configMap:
+      defaultMode: 420
+      items:
+      - key: Corefile
+        path: Corefile
+      name: coredns
+    name: config-volume
+  - hostPath:
+      path: /etc/localtime
+      type: File
+    name: localtime
+  - name: kube-api-access-48kgc
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:21Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:11Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:27Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:27Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:11Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://0dbb254977c7e0bae11b87abd2afd2835eec69999795dc2b0f31fa616307a121
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/coredns:1.30.30
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/coredns@sha256:830f9eb81ba3272ad9535eb008446de3a4abcd9c0ebbf31235cba08a1d5f9872
+    lastState: {}
+    name: coredns
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:27:21Z"
+    volumeMounts:
+    - mountPath: /etc/coredns
+      name: config-volume
+    - mountPath: /tmp
+      name: tmp
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-48kgc
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 192.168.0.108
+  hostIPs:
+  - ip: 192.168.0.108
+  phase: Running
+  podIP: 10.0.0.132
+  podIPs:
+  - ip: 10.0.0.132
+  qosClass: Guaranteed
+  startTime: "2025-08-01T10:27:11Z"
