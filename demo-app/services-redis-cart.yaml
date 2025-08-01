@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"redis-cart"},"name":"redis-cart","namespace":"demo-app"},"spec":{"ports":[{"name":"tcp-redis","port":6379,"targetPort":6379}],"selector":{"app":"redis-cart"},"type":"ClusterIP"}}
+  creationTimestamp: "2025-08-01T10:34:13Z"
+  labels:
+    app: redis-cart
+  name: redis-cart
+  namespace: demo-app
+  resourceVersion: "26677"
+  uid: 943bb2db-d98b-4dde-8d19-abeb6f59c0d1
+spec:
+  clusterIP: 10.247.17.237
+  clusterIPs:
+  - 10.247.17.237
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: tcp-redis
+    port: 6379
+    protocol: TCP
+    targetPort: 6379
+  selector:
+    app: redis-cart
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
