@@ -1,0 +1,206 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    localdns.cce.io/servers: '["169.254.20.10"]'
+    node-local-dns-webhook.k8s.io/status: injected
+    sidecar.istio.io/rewriteAppHTTPProbers: "true"
+  creationTimestamp: "2025-08-01T10:34:12Z"
+  generateName: frontend-c447b558-
+  labels:
+    app: frontend
+    pod-template-hash: c447b558
+  name: frontend-c447b558-xfqnf
+  namespace: demo-app
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: frontend-c447b558
+    uid: cb5e3427-4f0f-450c-8038-578216f55b0f
+  resourceVersion: "26915"
+  uid: fff557fb-bd82-4170-a368-57bf8aaf423e
+spec:
+  containers:
+  - env:
+    - name: PORT
+      value: "8080"
+    - name: PRODUCT_CATALOG_SERVICE_ADDR
+      value: productcatalogservice:3550
+    - name: CURRENCY_SERVICE_ADDR
+      value: currencyservice:7000
+    - name: CART_SERVICE_ADDR
+      value: cartservice:7070
+    - name: RECOMMENDATION_SERVICE_ADDR
+      value: recommendationservice:8080
+    - name: SHIPPING_SERVICE_ADDR
+      value: shippingservice:50051
+    - name: CHECKOUT_SERVICE_ADDR
+      value: checkoutservice:5050
+    - name: AD_SERVICE_ADDR
+      value: adservice:9555
+    - name: SHOPPING_ASSISTANT_SERVICE_ADDR
+      value: shoppingassistantservice:80
+    - name: ENV_PLATFORM
+      value: HWC
+    - name: ENABLE_PROFILER
+      value: "0"
+    image: swr.tr-west-1.myhuaweicloud.com/cce-training/frontend:latest
+    imagePullPolicy: Always
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        httpHeaders:
+        - name: Cookie
+          value: shop_session-id=x-liveness-probe
+        path: /_healthz
+        port: 8080
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    name: server
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        httpHeaders:
+        - name: Cookie
+          value: shop_session-id=x-readiness-probe
+        path: /_healthz
+        port: 8080
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 64Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      privileged: false
+      readOnlyRootFilesystem: true
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-gfqhg
+      readOnly: true
+  dnsConfig:
+    nameservers:
+    - 169.254.20.10
+    - 10.247.3.10
+    options:
+    - name: single-request-reopen
+      value: ""
+    - name: timeout
+      value: "2"
+    - name: ndots
+      value: "5"
+    searches:
+    - demo-app.svc.cluster.local
+    - svc.cluster.local
+    - cluster.local
+  dnsPolicy: None
+  enableServiceLinks: true
+  nodeName: 192.168.0.121
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-gfqhg
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:16Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:13Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:33Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:33Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:13Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://0f2975b659270529a9a96df2ec28d83c3a0646ed530d970df1a084b93f1c6795
+    image: swr.tr-west-1.myhuaweicloud.com/cce-training/frontend:latest
+    imageID: swr.tr-west-1.myhuaweicloud.com/cce-training/frontend@sha256:6968dfb174dbc4ee94a78e79c5bd10449c91516bac496e6a88b6c7958d096ebc
+    lastState: {}
+    name: server
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:34:15Z"
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-gfqhg
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 192.168.0.121
+  hostIPs:
+  - ip: 192.168.0.121
+  phase: Running
+  podIP: 10.0.0.7
+  podIPs:
+  - ip: 10.0.0.7
+  qosClass: Burstable
+  startTime: "2025-08-01T10:34:13Z"
