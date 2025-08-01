@@ -1,0 +1,318 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: "8888"
+    prometheus.io/scheme: http
+    prometheus.io/scrape: "true"
+    scheduler.alpha.kubernetes.io/tolerations: '[{"key": "taint.alpha.kubernetes.io/nodedown","value":
+      "","effect": "NoExecute","operator": "Exists"}]'
+  creationTimestamp: "2025-08-01T08:45:39Z"
+  generateName: log-agent-otel-collector-746cbf4d5f-
+  labels:
+    app: log-agent-otel-collector
+    pod-template-hash: 746cbf4d5f
+    release: cceaddon-log-agent
+  name: log-agent-otel-collector-746cbf4d5f-xrnv8
+  namespace: monitoring
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: log-agent-otel-collector-746cbf4d5f
+    uid: 21e8e7ce-9ed9-433c-b308-86693e6eacb7
+  resourceVersion: "23955"
+  uid: 08952ae0-1b72-4c5c-aaa1-d1f6ff1cbe70
+spec:
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - log-agent-otel-collector
+          topologyKey: topology.kubernetes.io/zone
+        weight: 100
+  containers:
+  - env:
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    - name: Region
+      value: tr-west-1
+    - name: ProjectID
+      value: b19971231bdf44d4b926977511fd59e1
+    - name: ClusterID
+      value: 6203370f-6eb3-11f0-81dd-0255ac10003e
+    - name: ClusterName
+      value: kubemigrate
+    - name: WATCH_SECRET
+      value: "true"
+    - name: PAAS_CRYPTO_PATH
+      value: /etc/cipher
+    - name: INSECURE_SKIP_VERIFY
+      value: "true"
+    - name: SCENE
+      value: HWS
+    - name: AOM_ENDPOINT
+      value: https://aom.tr-west-1.myhuaweicloud.com
+    - name: LTS_ACCESS_ENDPOINT
+      value: https://100.125.8.20:8102
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/otelcol:1.7.3
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      exec:
+        command:
+        - /bin/bash
+        - -c
+        - watcher_status=$(ps -ef | grep /var/paas/otel-collector/otel-watcher | grep
+          -v grep | wc -l); if [ "$watcher_status" != "1" ]; then echo "otel-watcher
+          running error"; exit 1; fi;otelcol_status=$(ps -ef | grep /var/paas/otel-collector/otelcol
+          | grep -v grep | wc -l); if [ "$otelcol_status" != "1" ]; then echo "otelcol
+          running error"; exit 1; fi
+      failureThreshold: 3
+      initialDelaySeconds: 20
+      periodSeconds: 20
+      successThreshold: 1
+      timeoutSeconds: 10
+    name: otel-collector
+    ports:
+    - containerPort: 8006
+      protocol: TCP
+    - containerPort: 4317
+      protocol: TCP
+    - containerPort: 8888
+      name: metric-port
+      protocol: TCP
+    resources:
+      limits:
+        cpu: "1"
+        memory: 2Gi
+      requests:
+        cpu: 200m
+        memory: 1Gi
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      runAsGroup: 10000
+      runAsUser: 10000
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/paas/otel-collector/conf
+      name: otel-collector-config-vol
+      readOnly: true
+    - mountPath: /var/paas/sys/log
+      name: varpaassyslog
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+    - mountPath: /var/paas/cert
+      name: cert
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-gp6qd
+      readOnly: true
+  dnsConfig:
+    options:
+    - name: single-request-reopen
+      value: ""
+    - name: timeout
+      value: "2"
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  initContainers:
+  - command:
+    - /bin/sh
+    - -c
+    - mkdir -p /var/paas/sys/log/otel && chmod 750 /var/paas/sys/log/otel && chown
+      -R 10000:10000 /var/paas/sys/log
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/otelcol:1.7.3
+    imagePullPolicy: IfNotPresent
+    name: init
+    resources:
+      limits:
+        cpu: 200m
+        memory: 200Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/paas/sys/log
+      name: varpaassyslog
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-gp6qd
+      readOnly: true
+  nodeName: 192.168.0.108
+  preemptionPolicy: PreemptLowerPriority
+  priority: 2000000000
+  priorityClassName: system-cluster-critical
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 10000
+  serviceAccount: log-agent-serviceaccount
+  serviceAccountName: log-agent-serviceaccount
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 30
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 30
+  - key: role
+    operator: Exists
+  - effect: NoSchedule
+    key: distribution.io/category
+    operator: Equal
+    value: IES
+  volumes:
+  - configMap:
+      defaultMode: 416
+      name: log-agent-otel-collector-config
+    name: otel-collector-config-vol
+  - name: cert
+    secret:
+      defaultMode: 416
+      items:
+      - key: caCert
+        path: caCert
+      - key: serverCert
+        path: serverCert
+      - key: serverKey
+        path: serverKey
+      secretName: log-agent-cert-secret
+  - hostPath:
+      path: /var/paas/sys/log
+      type: ""
+    name: varpaassyslog
+  - hostPath:
+      path: /var/paas/srv/kubernetes/root.key
+      type: ""
+    name: rootkey
+  - hostPath:
+      path: /var/paas/srv/kubernetes/common_shared.key
+      type: ""
+    name: commonsharedkey
+  - name: kube-api-access-gp6qd
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:47Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:47Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:48Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:48Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:11Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://a0c4ffed20db5590d10e1e15c31aa3bd25015b08d21b4eb902eb3ef35eff69d2
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/otelcol:1.7.3
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/otelcol@sha256:70af11a73090c8210ee9c8e0c30bdf7bfdce6f2ac1fbbc34038ba44e7f76fad3
+    lastState: {}
+    name: otel-collector
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:27:47Z"
+    volumeMounts:
+    - mountPath: /var/paas/otel-collector/conf
+      name: otel-collector-config-vol
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/paas/sys/log
+      name: varpaassyslog
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/paas/cert
+      name: cert
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-gp6qd
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 192.168.0.108
+  hostIPs:
+  - ip: 192.168.0.108
+  initContainerStatuses:
+  - containerID: containerd://5a403502c71c59d712e0e3c6042361386a111b9522d071235a6c8afe830c8194
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/otelcol:1.7.3
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/otelcol@sha256:70af11a73090c8210ee9c8e0c30bdf7bfdce6f2ac1fbbc34038ba44e7f76fad3
+    lastState: {}
+    name: init
+    ready: true
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: containerd://5a403502c71c59d712e0e3c6042361386a111b9522d071235a6c8afe830c8194
+        exitCode: 0
+        finishedAt: "2025-08-01T10:27:46Z"
+        reason: Completed
+        startedAt: "2025-08-01T10:27:46Z"
+    volumeMounts:
+    - mountPath: /var/paas/sys/log
+      name: varpaassyslog
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-gp6qd
+      readOnly: true
+      recursiveReadOnly: Disabled
+  phase: Running
+  podIP: 10.0.0.138
+  podIPs:
+  - ip: 10.0.0.138
+  qosClass: Burstable
+  startTime: "2025-08-01T10:27:11Z"
