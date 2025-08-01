@@ -1,0 +1,206 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    seccomp.security.alpha.kubernetes.io/pod: runtime/default
+  creationTimestamp: "2025-08-01T08:45:47Z"
+  generateName: kube-state-metrics-99bdcf4c4-
+  labels:
+    app: cie-collector
+    chart: cie-collector-3.12.1
+    component: kube-state-metrics
+    heritage: Helm
+    pod-template-hash: 99bdcf4c4
+    release: cceaddon-cie-collector
+  name: kube-state-metrics-99bdcf4c4-khcmz
+  namespace: monitoring
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: kube-state-metrics-99bdcf4c4
+    uid: 961871f4-5636-46ac-943f-f8036d05aaea
+  resourceVersion: "23570"
+  uid: 7818dbb2-90b4-4c08-ba3d-15450a7ab2af
+spec:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: component
+            operator: In
+            values:
+            - kube-state-metrics
+        topologyKey: kubernetes.io/hostname
+  containers:
+  - command:
+    - /bin/sh
+    - -c
+    - /kube-state-metrics --host=${POD_IP} --port=8080 --leaseDuration=15s --renewDeadline=10s
+      --retryPeriod=5s --telemetry-host=127.0.0.1 --telemetry-port=8081 --metric-labels-allowlist=nodes=[node,failure-domain.beta.kubernetes.io/zone,topology.kubernetes.io/zone,cce.cloud.com/cce-nodepool,kubernetes.io/role]
+      --resources=daemonsets,deployments,jobs,cronjobs,namespaces,nodes,persistentvolumeclaims,persistentvolumes,pods,resourcequotas,statefulsets,services,replicasets,configmaps,secrets
+      --metric-allowlist=kube_cronjob_status_active,kube_cronjob_info,kube_cronjob_labels,kube_configmap_info,kube_daemonset_created,kube_daemonset_status_current_number_scheduled,kube_daemonset_status_desired_number_scheduled,kube_daemonset_status_number_available,kube_daemonset_status_number_misscheduled,kube_daemonset_status_number_ready,kube_daemonset_status_number_unavailable,kube_daemonset_status_updated_number_scheduled,kube_deployment_created,kube_deployment_labels,kube_deployment_metadata_generation,kube_deployment_spec_replicas,kube_deployment_spec_strategy_rollingupdate_max_unavailable,kube_deployment_status_observed_generation,kube_deployment_status_replicas,kube_deployment_status_replicas_available,kube_deployment_status_replicas_ready,kube_deployment_status_replicas_unavailable,kube_deployment_status_replicas_updated,kube_job_info,kube_namespace_labels,kube_node_labels,kube_node_info,kube_node_spec_taint,kube_node_spec_unschedulable,kube_node_status_allocatable,kube_node_status_capacity,kube_node_status_condition,kube_node_volcano_oversubscription_status,kube_persistentvolume_status_phase,kube_persistentvolumeclaim_status_phase,kube_persistentvolume_info,kube_persistentvolumeclaim_info,kube_pod_container_info,kube_pod_container_resource_limits,kube_pod_container_resource_requests,kube_pod_container_status_last_terminated_reason,kube_pod_container_status_ready,kube_pod_container_status_restarts_total,kube_pod_container_status_running,kube_pod_container_status_terminated,kube_pod_container_status_terminated_reason,kube_pod_container_status_waiting,kube_pod_container_status_waiting_reason,kube_pod_info,kube_pod_labels,kube_pod_owner,kube_pod_status_phase,kube_pod_status_ready,kube_pod_spec_volumes_persistentvolumeclaims_info,kube_secret_info,kube_statefulset_created,kube_statefulset_labels,kube_statefulset_metadata_generation,kube_statefulset_replicas,kube_statefulset_status_observed_generation,kube_statefulset_status_replicas,kube_statefulset_status_replicas_ready,kube_statefulset_status_replicas_updated,kube_job_spec_completions,kube_job_status_failed,kube_job_status_succeeded,kube_node_status_allocatable_cpu_cores,kube_node_status_allocatable_memory_bytes,kube_replicaset_owner,kube_resourcequota
+    env:
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/kube-state-metrics:3.12.1
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 10
+      httpGet:
+        path: /healthz
+        port: 8082
+        scheme: HTTP
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 10
+    name: cie-collector-kube-state-metrics
+    ports:
+    - containerPort: 8080
+      name: metrics
+      protocol: TCP
+    - containerPort: 8081
+      name: telemetry
+      protocol: TCP
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1500Mi
+      requests:
+        cpu: 200m
+        memory: 200Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-8n5k6
+      readOnly: true
+  dnsConfig:
+    options:
+    - name: single-request-reopen
+      value: ""
+    - name: timeout
+      value: "2"
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  imagePullSecrets:
+  - name: default-secret
+  nodeName: 192.168.0.108
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: cceaddon-cie-collector-kube-state-metrics
+  serviceAccountName: cceaddon-cie-collector-kube-state-metrics
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoSchedule
+    key: distribution.io/category
+    operator: Equal
+    value: IES
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - hostPath:
+      path: /etc/localtime
+      type: ""
+    name: localtime
+  - name: kube-api-access-8n5k6
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:21Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:11Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:21Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:21Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:11Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://377e0a409be4b33a990ac25147e2d681d45d0339be4abfe6a825acd8d19f6dea
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/kube-state-metrics:3.12.1
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/kube-state-metrics@sha256:4858300aeea27262c624f6c37f8972f998b16c36e26cf2388728b15b5cd9be7c
+    lastState: {}
+    name: cie-collector-kube-state-metrics
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:27:21Z"
+    volumeMounts:
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-8n5k6
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 192.168.0.108
+  hostIPs:
+  - ip: 192.168.0.108
+  phase: Running
+  podIP: 10.0.0.133
+  podIPs:
+  - ip: 10.0.0.133
+  qosClass: Burstable
+  startTime: "2025-08-01T10:27:11Z"
