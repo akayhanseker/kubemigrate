@@ -1,0 +1,13 @@
+apiVersion: v1
+data:
+  default-scheduler: kube-scheduler
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"default-scheduler":"kube-scheduler"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"scheduler-config","namespace":"kube-system"}}
+  creationTimestamp: "2025-08-01T08:44:59Z"
+  name: scheduler-config
+  namespace: kube-system
+  resourceVersion: "395"
+  uid: adbf6d4c-df00-48ad-aa30-69319335049e
