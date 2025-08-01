@@ -1,0 +1,14 @@
+apiVersion: v1
+data:
+  alias: kubemigrate
+  enterpriseProjectID: "0"
+  virtualIPAttachedMaster: 192.168.0.123
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2025-08-01T08:45:46Z"
+  finalizers:
+  - cce.io/config-protection
+  name: cluster-config
+  namespace: kube-system
+  resourceVersion: "999"
+  uid: 9b508e36-8459-4a3a-b523-fcacf4dd4914
