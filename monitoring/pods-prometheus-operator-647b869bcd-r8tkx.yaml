@@ -1,0 +1,300 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2025-08-01T08:45:47Z"
+  generateName: prometheus-operator-647b869bcd-
+  labels:
+    app: prometheus-operator
+    pod-template-hash: 647b869bcd
+    release: cceaddon-cie-collector
+  name: prometheus-operator-647b869bcd-r8tkx
+  namespace: monitoring
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: prometheus-operator-647b869bcd
+    uid: e498b19c-2fc2-4dc1-a971-c8b124427fe3
+  resourceVersion: "23610"
+  uid: 571f5477-8d43-461f-ad9e-02bd7911e667
+spec:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - prometheus-operator
+        topologyKey: kubernetes.io/hostname
+  containers:
+  - args:
+    - --common.plugin-type=CCE
+    - --kubelet-service=kube-system/kubelet
+    - --web.listen-address=127.0.0.1:8080
+    - --prometheus-config-reloader=swr.tr-west-1.myhuaweicloud.com/hwofficial/prometheus-config-reloader:3.12.1
+    - --config-reloader-cpu-request=100m
+    - --config-reloader-cpu-limit=200m
+    - --config-reloader-memory-request=50Mi
+    - --config-reloader-memory-limit=100Mi
+    - --lease-lock-namespace=monitoring
+    - --thanos-default-base-image=swr.tr-west-1.myhuaweicloud.com/hwofficial/thanos:3.12.1
+    - --localhost=$(POD_PROM_IP)
+    - --runtime-scene=1
+    - --common.transfer-old-prometheus-pvc.enable=true
+    - --lightweight.enable=true
+    - --lightweight.agent.suppress-scrape-errors=true
+    - --lightweight.agent.suppress-duplicate-scrape-target-errors=true
+    - --lightweight.agent.config-strict-parse=false
+    - --lightweight.agent.show-remote-url=true
+    - --lightweight.common.statefulset-pvc-auto-deletion=true
+    - --lightweight.agent.sts-use-pvc=false
+    - --lightweight.agent.remote-write.pending-events=true
+    - --lightweight.agent.version=1.97.6
+    - --common.prom.enable-custom-metrics=true
+    - --common.kubernetes-cluster-id=6203370f-6eb3-11f0-81dd-0255ac10003e
+    - --prometheus-instance-selector=openvessel.io/monitoring-resource=prometheus
+    - --common.aom.openapi-address=https://aom.tr-west-1.myhuaweicloud.com
+    - --common.aom.prom-instance-id=b95bcf8f-43a8-46b5-a510-5247f95a187d
+    - --common.aom.project-id=b19971231bdf44d4b926977511fd59e1
+    - --common.aom.region-id=
+    - --prometheus-instance-namespaces=monitoring
+    - --alertmanager-instance-namespaces=monitoring
+    - --thanos-ruler-instance-namespaces=monitoring
+    - --common.prom.system-scrape-interval=15s
+    - --common.prom.system-scrape-insecure-skip-verify=true
+    - --common.kubernetes-cluster-name=kubemigrate
+    - --cluster-domain=cluster.local
+    - --common.helm-release-name=cceaddon-cie-collector
+    - --old-prometheus.compatible-mode.enable=false
+    - --common.prom.enable-preset-monitor=false
+    - --common.plugin.cluster-category=CCE
+    - --common.ksm.image-pull-policy=IfNotPresent
+    env:
+    - name: PAAS_CRYPTO_PATH
+      value: /etc/cipher
+    - name: CRYPTO_ENABLE
+      value: "true"
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    - name: POD_UID
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.uid
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/prometheus-operator:3.12.1
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 10
+      httpGet:
+        path: /ready
+        port: 8081
+        scheme: HTTP
+      initialDelaySeconds: 60
+      periodSeconds: 30
+      successThreshold: 1
+      timeoutSeconds: 10
+    name: prometheus-operator
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+    - mountPath: /etc/operator
+      name: persistent-user-config
+      readOnly: true
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+    - mountPath: /etc/operator-security-config
+      name: persistent-user-security-config
+      readOnly: true
+    - mountPath: /etc/operator-security-tls-config
+      name: persistent-user-security-tls-config
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-9m2hc
+      readOnly: true
+  dnsConfig:
+    options:
+    - name: single-request-reopen
+      value: ""
+    - name: timeout
+      value: "2"
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  imagePullSecrets:
+  - name: default-secret
+  nodeName: 192.168.0.108
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 10000
+    runAsGroup: 10000
+    runAsNonRoot: true
+    runAsUser: 10000
+  serviceAccount: prometheus-operator
+  serviceAccountName: prometheus-operator
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoSchedule
+    key: distribution.io/category
+    operator: Equal
+    value: IES
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - hostPath:
+      path: /etc/localtime
+      type: ""
+    name: localtime
+  - configMap:
+      defaultMode: 416
+      name: persistent-user-config
+      optional: true
+    name: persistent-user-config
+  - hostPath:
+      path: /var/paas/srv/kubernetes/root.key
+      type: ""
+    name: rootkey
+  - hostPath:
+      path: /var/paas/srv/kubernetes/common_shared.key
+      type: ""
+    name: commonsharedkey
+  - name: persistent-user-security-config
+    secret:
+      defaultMode: 416
+      optional: true
+      secretName: persistent-user-security-config
+  - name: persistent-user-security-tls-config
+    secret:
+      defaultMode: 416
+      optional: true
+      secretName: persistent-user-security-tls-config
+  - name: kube-api-access-9m2hc
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:22Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:11Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:22Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:22Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:11Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://8316441c463e63f63fcd64069e886a6fe6be7ae571bdd33c1fffb79f809cd32b
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/prometheus-operator:3.12.1
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/prometheus-operator@sha256:c537fddf844852bf7820fb3b0fac9cba606011f5a9c8ae73e4f7e1fbe9b36f42
+    lastState: {}
+    name: prometheus-operator
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:27:22Z"
+    volumeMounts:
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/operator
+      name: persistent-user-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/operator-security-config
+      name: persistent-user-security-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/operator-security-tls-config
+      name: persistent-user-security-tls-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-9m2hc
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 192.168.0.108
+  hostIPs:
+  - ip: 192.168.0.108
+  phase: Running
+  podIP: 10.0.0.137
+  podIPs:
+  - ip: 10.0.0.137
+  qosClass: Burstable
+  startTime: "2025-08-01T10:27:11Z"
