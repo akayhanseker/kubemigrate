@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"shippingservice"},"name":"shippingservice","namespace":"demo-app"},"spec":{"ports":[{"name":"grpc","port":50051,"targetPort":50051}],"selector":{"app":"shippingservice"},"type":"ClusterIP"}}
+  creationTimestamp: "2025-08-01T10:34:13Z"
+  labels:
+    app: shippingservice
+  name: shippingservice
+  namespace: demo-app
+  resourceVersion: "26690"
+  uid: 4332148e-d375-4269-839c-79d5a771ce38
+spec:
+  clusterIP: 10.247.207.182
+  clusterIPs:
+  - 10.247.207.182
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: grpc
+    port: 50051
+    protocol: TCP
+    targetPort: 50051
+  selector:
+    app: shippingservice
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
