@@ -1,0 +1,546 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    checksum/config: 5d4d366b2e991baa43a4ffdadd9f70a0161b222dfa07703b9527bf446e575e75
+  creationTimestamp: "2025-08-01T10:26:53Z"
+  generateName: everest-csi-driver-
+  labels:
+    controller-revision-hash: 6bcc5dcd8d
+    pod-template-generation: "1"
+    release: cceaddon-everest
+  name: everest-csi-driver-n2n9r
+  namespace: kube-system
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: DaemonSet
+    name: everest-csi-driver
+    uid: e0bf26d3-c95b-40a2-9b04-8ab94595bd26
+  resourceVersion: "23469"
+  uid: bd687ddf-248e-49ae-bcb0-ac6b1c5cb02b
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchFields:
+          - key: metadata.name
+            operator: In
+            values:
+            - 192.168.0.108
+  containers:
+  - args:
+    - --controllers=everest-csi-local-volume,everest-csi-provisioner,everest-csi-resizer
+    - --feature-gates=Topology=true,DistributeAttacher=false
+    - --provision-with-strict-topology=true
+    - --csi-attacher-worker-threads=60
+    - --csi-attacher-detach-worker-threads=60
+    - --csi-attacher-should-reconcile-va=false
+    - --csi-attacher-enable-drivers=disk.csi.everest.io
+    env:
+    - name: NUMBER_OF_RESERVED_DISKS
+      value: "6"
+    - name: DISABLE_AUTO_MOUNT_SECRET
+      value: "false"
+    - name: UMOUNT_NFS_WITH_FORCE_OPTION
+      value: "false"
+    - name: SUPPORT_HCS
+      value: "false"
+    - name: CHECK_EVS_VOLUME_CREATED_BY_JOB
+      value: "true"
+    - name: PAAS_CRYPTO_PATH
+      value: /var/paas/everest/cipher
+    - name: CIPHER_ROOT
+      value: /var/paas/everest/cipher
+    - name: KUBE_NODE_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: spec.nodeName
+    - name: DRIVERS
+      value: '*'
+    - name: CONTAINER_PLATFORM
+      value: cce
+    - name: RUN_MODE
+      value: agent
+    - name: DRIVER_PLUGIN_DIR_TO_REPORT
+      value: /mnt/paas/kubernetes/kubelet/plugins
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    - name: EVS_ENDPOINT
+      value: https://evs.tr-west-1.myhuaweicloud.com:443
+    - name: ECS_ENDPOINT
+      value: https://ecs.tr-west-1.myhuaweicloud.com:443
+    - name: IAM_ENDPOINT
+      value: https://iam.tr-west-1.myhuaweicloud.com:443
+    - name: SFS_ENDPOINT
+      value: https://sfs.tr-west-1.myhuaweicloud.com:443
+    - name: SFS30_ENDPOINT
+      value: https://obs.region.domainname.com:443
+    - name: OBS_ENDPOINT
+      value: https://obs.tr-west-1.myhuaweicloud.com:443
+    - name: SFS_TURBO_ENDPOINT
+      value: https://sfs-turbo.tr-west-1.myhuaweicloud.com:443
+    - name: BMS_ENDPOINT
+      value: https://bms.tr-west-1.myhuaweicloud.com:443
+    - name: IMS_ENDPOINT
+      value: https://ims.tr-west-1.myhuaweicloud.com:443
+    - name: AKSK_SECRET_NAME
+      value: paas.aksk
+    - name: DEFAULT_VPC_ID
+      value: 01abc5cb-6850-46ef-9322-d6d4469aaddb
+    - name: PROJECT_ID
+      value: b19971231bdf44d4b926977511fd59e1
+    - name: CLUSTER_ID
+      value: 6203370f-6eb3-11f0-81dd-0255ac10003e
+    - name: CLUSTER_NAME
+      value: kubemigrate
+    - name: CLUSTER_VERSION
+      value: v1.31.4-r0
+    - name: VOLUME_ATTACHING_FLOW_CTRL
+      value: "0"
+    - name: LOG_LEVEL
+      value: "2"
+    - name: ENABLE_PPROF
+      value: "false"
+    - name: OVER_SUBSCRIPTION
+      value: "80"
+    - name: ENABLE_AUTOPILOT
+      value: "false"
+    - name: ENABLE_ECS_V1_API
+      value: "true"
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/everest:2.4.134
+    imagePullPolicy: IfNotPresent
+    lifecycle:
+      preStop:
+        exec:
+          command:
+          - /bin/sh
+          - -c
+          - rm -rf /var/paas/everest/plugins_registry/disk.csi.everest.io-reg.sock
+            /var/paas/everest/plugins_registry/nas.csi.everest.io-reg.sock /var/paas/everest/plugins_registry/obs.csi.everest.io-reg.sock
+            /var/paas/everest/plugins_registry/sfsturbo.csi.everest.io-reg.sock /var/paas/everest/plugins_registry/local.csi.everest.io-reg.sock
+            /var/paas/everest/plugins_registry/proxy.csi.everest.io-reg.sock /var/paas/everest/plugins/disk.csi.everest.io/csi.sock
+            /var/paas/everest/plugins/nas.csi.everest.io/csi.sock /var/paas/everest/plugins/obs.csi.everest.io/csi.sock
+            /var/paas/everest/plugins/sfsturbo.csi.everest.io/csi.sock /var/paas/everest/plugins/local.csi.everest.io/csi.sock
+            /var/paas/everest/plugins/proxy.csi.everest.io/csi.sock && ps -ef| grep
+            -v csi-driver-builtin-start-cmd| grep /var/paas/everest/everest-csi-driver|
+            grep run-mode=agent| awk '{print $2}'| xargs kill && sleep 30
+    livenessProbe:
+      failureThreshold: 5
+      httpGet:
+        host: 127.0.0.1
+        path: /healthz
+        port: healthzport
+        scheme: HTTP
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    name: everest-csi-driver
+    ports:
+    - containerPort: 3225
+      hostPort: 3225
+      name: healthzport
+      protocol: TCP
+    resources:
+      limits:
+        cpu: 300m
+        memory: 300Mi
+      requests:
+        cpu: 300m
+        memory: 300Mi
+    securityContext:
+      capabilities:
+        add:
+        - SYS_ADMIN
+        drop:
+        - all
+      privileged: true
+      readOnlyRootFilesystem: true
+    terminationMessagePath: /var/log/cce/everest/termination.log
+    terminationMessagePolicy: FallbackToLogsOnError
+    volumeMounts:
+    - mountPath: /var/paas/everest/plugins_registry
+      name: registration-dir
+    - mountPath: /var/paas/everest/plugins
+      mountPropagation: Bidirectional
+      name: plugin-dir
+    - mountPath: /mnt/paas/kubernetes/kubelet/plugins
+      mountPropagation: Bidirectional
+      name: plugin-dir
+    - mountPath: /mnt/paas/kubernetes/kubelet/pods
+      mountPropagation: Bidirectional
+      name: pods-mount-dir
+    - mountPath: /dev
+      mountPropagation: HostToContainer
+      name: host-dev
+      readOnly: true
+    - mountPath: /sys
+      name: host-sys
+      readOnly: true
+    - mountPath: /run/udev
+      name: host-run-udev
+      readOnly: true
+    - mountPath: /host/opt/everest-host-connector
+      name: host-connector-path
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+    - mountPath: /host/etc/os-release
+      name: host-os-release
+      readOnly: true
+    - mountPath: /var/log/cce/everest
+      name: host-log
+    - mountPath: /var/paas/conf
+      name: node-config
+      readOnly: true
+    - mountPath: /var/paas/everest/cipher/root.key
+      name: cipher-root
+      readOnly: true
+    - mountPath: /var/paas/everest/cipher/common_shared.key
+      name: cipher-common
+      readOnly: true
+    - mountPath: /var/paas/everest/throttle
+      name: throttle-conf
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-vcscd
+      readOnly: true
+  dnsConfig:
+    options:
+    - name: single-request-reopen
+      value: ""
+    - name: timeout
+      value: "2"
+  dnsPolicy: Default
+  enableServiceLinks: true
+  hostNetwork: true
+  hostPID: true
+  initContainers:
+  - command:
+    - /bin/sh
+    - -c
+    - rm -f /host/old_plugins_registry/*.csi.everest.io-reg.sock; /var/paas/everest-csi-driver/config.sh
+    env:
+    - name: ENABLE_AUTOPILOT
+      value: "false"
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/everest-csi-driver-init:2.4.134
+    imagePullPolicy: IfNotPresent
+    name: everest-csi-driver-init
+    resources:
+      limits:
+        cpu: 300m
+        memory: 300Mi
+      requests:
+        cpu: 300m
+        memory: 300Mi
+    securityContext:
+      capabilities:
+        add:
+        - SYS_ADMIN
+        drop:
+        - all
+      privileged: true
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /host/etc
+      name: host-etc
+    - mountPath: /host/usr
+      name: host-usr
+    - mountPath: /host/lib
+      name: host-lib
+    - mountPath: /host/opt/dfv/obsfs
+      name: host-optdfv-obsfs
+    - mountPath: /host/spool/cron
+      name: host-spoolcron-obsfs
+    - mountPath: /var/log/cce/everest
+      name: host-log
+    - mountPath: /host/opt/everest-host-connector
+      name: host-connector-path
+    - mountPath: /host/run/mount
+      name: host-mount-utab-path
+    - mountPath: /host/old_plugins_registry
+      name: old-registration-dir
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-vcscd
+      readOnly: true
+  nodeName: 192.168.0.108
+  preemptionPolicy: PreemptLowerPriority
+  priority: 2000001000
+  priorityClassName: system-node-critical
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  serviceAccount: everest-csi-plugin
+  serviceAccountName: everest-csi-plugin
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - operator: Exists
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/disk-pressure
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/memory-pressure
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/pid-pressure
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/unschedulable
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/network-unavailable
+    operator: Exists
+  volumes:
+  - hostPath:
+      path: /run/mount
+      type: Directory
+    name: host-mount-utab-path
+  - hostPath:
+      path: /mnt/paas/kubernetes/kubelet/plugins_registry
+      type: DirectoryOrCreate
+    name: old-registration-dir
+  - hostPath:
+      path: /mnt/paas/kubernetes/kubelet/plugins_registry/everest
+      type: DirectoryOrCreate
+    name: registration-dir
+  - hostPath:
+      path: /mnt/paas/kubernetes/kubelet/plugins
+      type: DirectoryOrCreate
+    name: plugin-dir
+  - hostPath:
+      path: /mnt/paas/kubernetes/kubelet/pods
+      type: DirectoryOrCreate
+    name: pods-mount-dir
+  - hostPath:
+      path: /dev
+      type: Directory
+    name: host-dev
+  - hostPath:
+      path: /etc
+      type: Directory
+    name: host-etc
+  - hostPath:
+      path: /usr
+      type: Directory
+    name: host-usr
+  - hostPath:
+      path: /lib
+      type: Directory
+    name: host-lib
+  - hostPath:
+      path: /opt/dfv/obsfs
+      type: DirectoryOrCreate
+    name: host-optdfv-obsfs
+  - hostPath:
+      path: /var/spool/cron
+      type: DirectoryOrCreate
+    name: host-spoolcron-obsfs
+  - hostPath:
+      path: /etc/localtime
+      type: File
+    name: localtime
+  - hostPath:
+      path: /etc/os-release
+      type: File
+    name: host-os-release
+  - hostPath:
+      path: /var/log/cce/kubernetes
+      type: DirectoryOrCreate
+    name: host-log
+  - hostPath:
+      path: /var/paas/conf
+      type: Directory
+    name: node-config
+  - hostPath:
+      path: /var/paas/srv/kubernetes/root.key
+      type: File
+    name: cipher-root
+  - hostPath:
+      path: /var/paas/srv/kubernetes/common_shared.key
+      type: File
+    name: cipher-common
+  - hostPath:
+      path: /opt/everest-host-connector
+      type: DirectoryOrCreate
+    name: host-connector-path
+  - hostPath:
+      path: /sys
+      type: Directory
+    name: host-sys
+  - hostPath:
+      path: /run/udev
+      type: Directory
+    name: host-run-udev
+  - configMap:
+      defaultMode: 416
+      items:
+      - key: throttle.json
+        path: throttle.json
+      name: everest-driver-th-config
+    name: throttle-conf
+  - name: kube-api-access-vcscd
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:09Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:09Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:17Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:17Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:26:53Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://77b524c73300ad54483265d13b816b657178bee1e8c7507c25684fce583d7f87
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/everest:2.4.134
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/everest@sha256:ec55b77d5759b6ba72e6d33d2e7fd30c392aa443de80bc9294f37d9adf11ae4e
+    lastState: {}
+    name: everest-csi-driver
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:27:17Z"
+    volumeMounts:
+    - mountPath: /var/paas/everest/plugins_registry
+      name: registration-dir
+    - mountPath: /var/paas/everest/plugins
+      name: plugin-dir
+    - mountPath: /mnt/paas/kubernetes/kubelet/plugins
+      name: plugin-dir
+    - mountPath: /mnt/paas/kubernetes/kubelet/pods
+      name: pods-mount-dir
+    - mountPath: /dev
+      name: host-dev
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /sys
+      name: host-sys
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /run/udev
+      name: host-run-udev
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /host/opt/everest-host-connector
+      name: host-connector-path
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /host/etc/os-release
+      name: host-os-release
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/log/cce/everest
+      name: host-log
+    - mountPath: /var/paas/conf
+      name: node-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/paas/everest/cipher/root.key
+      name: cipher-root
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/paas/everest/cipher/common_shared.key
+      name: cipher-common
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/paas/everest/throttle
+      name: throttle-conf
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-vcscd
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 192.168.0.108
+  hostIPs:
+  - ip: 192.168.0.108
+  initContainerStatuses:
+  - containerID: containerd://4eceb1f86b9c9484403ec3fb77e4375811ba61c4fb8d43610f26294f91bf6888
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/everest-csi-driver-init:2.4.134
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/everest-csi-driver-init@sha256:e972d0945b6798053713a208c931b2b7a3320e00c12297c515fc27177f8058c8
+    lastState: {}
+    name: everest-csi-driver-init
+    ready: true
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: containerd://4eceb1f86b9c9484403ec3fb77e4375811ba61c4fb8d43610f26294f91bf6888
+        exitCode: 0
+        finishedAt: "2025-08-01T10:27:09Z"
+        reason: Completed
+        startedAt: "2025-08-01T10:27:09Z"
+    volumeMounts:
+    - mountPath: /host/etc
+      name: host-etc
+    - mountPath: /host/usr
+      name: host-usr
+    - mountPath: /host/lib
+      name: host-lib
+    - mountPath: /host/opt/dfv/obsfs
+      name: host-optdfv-obsfs
+    - mountPath: /host/spool/cron
+      name: host-spoolcron-obsfs
+    - mountPath: /var/log/cce/everest
+      name: host-log
+    - mountPath: /host/opt/everest-host-connector
+      name: host-connector-path
+    - mountPath: /host/run/mount
+      name: host-mount-utab-path
+    - mountPath: /host/old_plugins_registry
+      name: old-registration-dir
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-vcscd
+      readOnly: true
+      recursiveReadOnly: Disabled
+  phase: Running
+  podIP: 192.168.0.108
+  podIPs:
+  - ip: 192.168.0.108
+  qosClass: Guaranteed
+  startTime: "2025-08-01T10:26:54Z"
