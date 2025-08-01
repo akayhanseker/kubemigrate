@@ -1,0 +1,33 @@
+apiVersion: v1
+data:
+  plugins.conf: |-
+    [PLUGINS]
+        Path /fluent-bit/plugins/out_lts.so
+  service.conf: |-
+    [SERVICE]
+        Flush              1
+        Daemon             Off
+        Log_Level          warn
+        Parsers_File       /fluent-bit/etc/parsers.conf
+        plugins_file       /fluent-bit/etc/plugins/plugins.conf
+        HTTP_Server        On
+        HTTP_Listen        ${POD_IP}
+        HTTP_Port          2020
+        scheduler.cap      180
+        scheduler.base     2
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-log-agent
+    meta.helm.sh/release-namespace: monitoring
+  creationTimestamp: "2025-08-01T08:45:39Z"
+  labels:
+    app: log-agent-fluent-bit
+    app.kubernetes.io/managed-by: Helm
+    chart: log-agent-1.7.3
+    heritage: Helm
+    release: cceaddon-log-agent
+  name: log-agent-fluent-bit-config-service
+  namespace: monitoring
+  resourceVersion: "713"
+  uid: ce3f9517-6d54-4cd8-b54a-1d3767437a43
