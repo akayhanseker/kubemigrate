@@ -1,0 +1,17 @@
+apiVersion: v1
+data:
+  component: log-agent
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-log-agent
+    meta.helm.sh/release-namespace: monitoring
+  creationTimestamp: "2025-08-01T08:45:39Z"
+  labels:
+    app: log-agent-event-to-aom
+    app.kubernetes.io/managed-by: Helm
+    release: cceaddon-log-agent
+  name: log-agent-event-to-aom
+  namespace: monitoring
+  resourceVersion: "711"
+  uid: 10fd07b4-e928-41d1-9a60-1e28377666db
