@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-node-local-dns
+    meta.helm.sh/release-namespace: kube-system
+    prometheus.io/port: "9253"
+    prometheus.io/scrape: "true"
+  creationTimestamp: "2025-08-01T08:45:38Z"
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    k8s-app: node-local-dns
+    release: cceaddon-node-local-dns
+  name: node-local-dns
+  namespace: kube-system
+  resourceVersion: "665"
+  uid: d3c8fd9a-d5ba-470a-8bdb-9c9e933b2889
+spec:
+  clusterIP: None
+  clusterIPs:
+  - None
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: metrics
+    port: 9253
+    protocol: TCP
+    targetPort: 9253
+  selector:
+    k8s-app: node-local-dns
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
