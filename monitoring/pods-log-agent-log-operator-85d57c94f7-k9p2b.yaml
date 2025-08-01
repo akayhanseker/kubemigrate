@@ -1,0 +1,422 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: "8443"
+    prometheus.io/scheme: https
+    prometheus.io/scrape: "true"
+  creationTimestamp: "2025-08-01T08:45:39Z"
+  generateName: log-agent-log-operator-85d57c94f7-
+  labels:
+    app: log-agent-log-operator
+    pod-template-hash: 85d57c94f7
+    release: cceaddon-log-agent
+  name: log-agent-log-operator-85d57c94f7-k9p2b
+  namespace: monitoring
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: log-agent-log-operator-85d57c94f7
+    uid: 02bf96b8-fa26-4391-b31e-834b52cc5a92
+  resourceVersion: "23857"
+  uid: 96db00dd-a15e-4d29-9f0c-d263bcf91526
+spec:
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - log-agent-log-operator
+          topologyKey: topology.kubernetes.io/zone
+        weight: 100
+  containers:
+  - command:
+    - /var/paas/log-operator/log-operator
+    - --enable-leader-election
+    - --log-print-type=console
+    - --enable-fluent-bit-use-kubelet=true
+    - --lts-compress-type=gzip
+    - --enable-webhook=true
+    - --lts-enterprise-project-id=0
+    - --buffer-chunk-size=128k
+    - --buffer-max-size=512k
+    - --mem-buf-limit=40MB
+    - --aom-endpoint=https://aom.tr-west-1.myhuaweicloud.com
+    - --lts-endpoint=https://lts.tr-west-1.myhuaweicloud.com
+    - --lts-access-endpoint=https://100.125.8.20:8102
+    - --init-lts-for-stdout=true
+    - --init-lts-for-event=true
+    - --enable-ssl=true
+    env:
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: POD_UID
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.uid
+    - name: HOST_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.hostIP
+    - name: INSECURE_SKIP_VERIFY
+      value: "true"
+    - name: Region
+      value: tr-west-1
+    - name: projectID
+      value: b19971231bdf44d4b926977511fd59e1
+    - name: clusterID
+      value: 6203370f-6eb3-11f0-81dd-0255ac10003e
+    - name: clusterName
+      value: kubemigrate
+    - name: PAAS_CRYPTO_PATH
+      value: /etc/cipher
+    - name: APP_NAME
+      value: CCE
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/log-operator:1.7.3
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      exec:
+        command:
+        - /bin/bash
+        - -c
+        - test `ps -eo stat,command | grep -v grep | grep log-operator | awk '{print
+          $1}' | egrep "^Z|^T" | wc -l` == 0
+      failureThreshold: 3
+      periodSeconds: 20
+      successThreshold: 1
+      timeoutSeconds: 10
+    name: log-operator
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      runAsGroup: 10000
+      runAsUser: 10000
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+    - mountPath: /var/paas/sys/log
+      name: varpaassyslog
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+    - mountPath: /var/paas/cert
+      name: cert
+      readOnly: true
+    - mountPath: /var/paas/fluent-bit-config
+      name: fluent-bit-config-service
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2h9w6
+      readOnly: true
+  dnsConfig:
+    options:
+    - name: single-request-reopen
+      value: ""
+    - name: timeout
+      value: "2"
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  imagePullSecrets:
+  - name: default-secret
+  initContainers:
+  - command:
+    - /var/paas/log-adaptor/log-adaptor
+    - --absolute-crd-dir-path=/var/paas/log-adaptor/crds/
+    - --retry-times=3
+    - --force-upgrade=false
+    - --log-print-type=console
+    - --cop-logs-operator-name=log-agent-log-operator
+    env:
+    - name: APP_NAME
+      value: CCE
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
+    - name: PAAS_CRYPTO_PATH
+      value: /etc/cipher
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/log-adaptor:1.7.3
+    imagePullPolicy: IfNotPresent
+    name: init-log-operator
+    resources:
+      limits:
+        cpu: 200m
+        memory: 500Mi
+      requests:
+        cpu: 50m
+        memory: 50Mi
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+    - mountPath: /var/paas/sys/log
+      name: varpaassyslog
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2h9w6
+      readOnly: true
+  - command:
+    - /bin/sh
+    - -c
+    - mkdir -p /var/paas/sys/log/log-operator && chmod 750 /var/paas/sys/log/log-operator
+      && chown -R 10000:10000 /var/paas/sys/log
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/log-operator:1.7.3
+    imagePullPolicy: IfNotPresent
+    name: init
+    resources:
+      limits:
+        cpu: 200m
+        memory: 200Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/paas/sys/log
+      name: varpaassyslog
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2h9w6
+      readOnly: true
+  nodeName: 192.168.0.108
+  preemptionPolicy: PreemptLowerPriority
+  priority: 2000000000
+  priorityClassName: system-cluster-critical
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 10000
+  serviceAccount: log-agent-log-operator
+  serviceAccountName: log-agent-log-operator
+  terminationGracePeriodSeconds: 5
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 30
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 30
+  - key: role
+    operator: Exists
+  - effect: NoSchedule
+    key: distribution.io/category
+    operator: Equal
+    value: IES
+  volumes:
+  - hostPath:
+      path: /etc/localtime
+      type: ""
+    name: localtime
+  - hostPath:
+      path: /var/paas/sys/log
+      type: ""
+    name: varpaassyslog
+  - hostPath:
+      path: /var/paas/srv/kubernetes/root.key
+      type: ""
+    name: rootkey
+  - hostPath:
+      path: /var/paas/srv/kubernetes/common_shared.key
+      type: ""
+    name: commonsharedkey
+  - name: cert
+    secret:
+      defaultMode: 416
+      items:
+      - key: caCert
+        path: caCert
+      - key: serverCert
+        path: serverCert
+      - key: serverKey
+        path: serverKey
+      optional: true
+      secretName: log-agent-cert-secret
+  - configMap:
+      defaultMode: 416
+      name: log-agent-fluent-bit-config-service
+    name: fluent-bit-config-service
+  - name: kube-api-access-2h9w6
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:22Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:36Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:37Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:37Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:11Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://d942ff06f1d0451662ef24c88b12034111fcdbe219375995d874e77c95bfb7e4
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/log-operator:1.7.3
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/log-operator@sha256:48a55308f5ba1ff0982742896b3201efd428002d6e6a0b86ed5856616a7d38f5
+    lastState: {}
+    name: log-operator
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:27:36Z"
+    volumeMounts:
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/paas/sys/log
+      name: varpaassyslog
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/paas/cert
+      name: cert
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/paas/fluent-bit-config
+      name: fluent-bit-config-service
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2h9w6
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 192.168.0.108
+  hostIPs:
+  - ip: 192.168.0.108
+  initContainerStatuses:
+  - containerID: containerd://097153be8046ec4c7e716bdf5d5da6c3287f0ec6e351160eb4732357870525be
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/log-adaptor:1.7.3
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/log-adaptor@sha256:207279d11ff40057539a8fe369c43bd5b8e68af57eef50359c73e715e17b753b
+    lastState: {}
+    name: init-log-operator
+    ready: true
+    restartCount: 1
+    started: false
+    state:
+      terminated:
+        containerID: containerd://097153be8046ec4c7e716bdf5d5da6c3287f0ec6e351160eb4732357870525be
+        exitCode: 0
+        finishedAt: "2025-08-01T10:27:34Z"
+        reason: Completed
+        startedAt: "2025-08-01T10:27:34Z"
+    volumeMounts:
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/paas/sys/log
+      name: varpaassyslog
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2h9w6
+      readOnly: true
+      recursiveReadOnly: Disabled
+  - containerID: containerd://c6c17395ffaecfc3acfe7fca3098b9a55d28fb302baa462f04ac02c30e03bdc2
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/log-operator:1.7.3
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/log-operator@sha256:48a55308f5ba1ff0982742896b3201efd428002d6e6a0b86ed5856616a7d38f5
+    lastState: {}
+    name: init
+    ready: true
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: containerd://c6c17395ffaecfc3acfe7fca3098b9a55d28fb302baa462f04ac02c30e03bdc2
+        exitCode: 0
+        finishedAt: "2025-08-01T10:27:35Z"
+        reason: Completed
+        startedAt: "2025-08-01T10:27:35Z"
+    volumeMounts:
+    - mountPath: /var/paas/sys/log
+      name: varpaassyslog
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-2h9w6
+      readOnly: true
+      recursiveReadOnly: Disabled
+  phase: Running
+  podIP: 10.0.0.136
+  podIPs:
+  - ip: 10.0.0.136
+  qosClass: Burstable
+  startTime: "2025-08-01T10:27:11Z"
