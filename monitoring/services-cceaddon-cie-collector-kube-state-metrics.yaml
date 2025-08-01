@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-cie-collector
+    meta.helm.sh/release-namespace: monitoring
+  creationTimestamp: "2025-08-01T08:45:47Z"
+  labels:
+    app: cie-collector
+    app.kubernetes.io/managed-by: Helm
+    chart: cie-collector-3.12.1
+    component: kube-state-metrics
+    heritage: Helm
+    release: cceaddon-cie-collector
+  name: cceaddon-cie-collector-kube-state-metrics
+  namespace: monitoring
+  resourceVersion: "853"
+  uid: 4626de23-ca1c-43a3-a399-381c3f79443a
+spec:
+  clusterIP: None
+  clusterIPs:
+  - None
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: cie-collector
+    component: kube-state-metrics
+    release: cceaddon-cie-collector
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
