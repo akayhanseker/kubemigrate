@@ -1,0 +1,230 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    meta.helm.sh/release-name: cceaddon-log-agent
+    meta.helm.sh/release-namespace: monitoring
+  creationTimestamp: "2025-08-01T08:45:39Z"
+  generation: 1
+  labels:
+    app: log-agent-otel-collector
+    app.kubernetes.io/managed-by: Helm
+    release: cceaddon-log-agent
+  name: log-agent-otel-collector
+  namespace: monitoring
+  resourceVersion: "24004"
+  uid: 0f9b6d33-706d-4b83-9157-a58d6db81a29
+spec:
+  minReadySeconds: 5
+  progressDeadlineSeconds: 120
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: log-agent-otel-collector
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8888"
+        prometheus.io/scheme: http
+        prometheus.io/scrape: "true"
+        scheduler.alpha.kubernetes.io/tolerations: '[{"key": "taint.alpha.kubernetes.io/nodedown","value":
+          "","effect": "NoExecute","operator": "Exists"}]'
+      creationTimestamp: null
+      labels:
+        app: log-agent-otel-collector
+        release: cceaddon-log-agent
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - log-agent-otel-collector
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+      containers:
+      - env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: Region
+          value: tr-west-1
+        - name: ProjectID
+          value: b19971231bdf44d4b926977511fd59e1
+        - name: ClusterID
+          value: 6203370f-6eb3-11f0-81dd-0255ac10003e
+        - name: ClusterName
+          value: kubemigrate
+        - name: WATCH_SECRET
+          value: "true"
+        - name: PAAS_CRYPTO_PATH
+          value: /etc/cipher
+        - name: INSECURE_SKIP_VERIFY
+          value: "true"
+        - name: SCENE
+          value: HWS
+        - name: AOM_ENDPOINT
+          value: https://aom.tr-west-1.myhuaweicloud.com
+        - name: LTS_ACCESS_ENDPOINT
+          value: https://100.125.8.20:8102
+        image: swr.tr-west-1.myhuaweicloud.com/hwofficial/otelcol:1.7.3
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - watcher_status=$(ps -ef | grep /var/paas/otel-collector/otel-watcher
+              | grep -v grep | wc -l); if [ "$watcher_status" != "1" ]; then echo
+              "otel-watcher running error"; exit 1; fi;otelcol_status=$(ps -ef | grep
+              /var/paas/otel-collector/otelcol | grep -v grep | wc -l); if [ "$otelcol_status"
+              != "1" ]; then echo "otelcol running error"; exit 1; fi
+          failureThreshold: 3
+          initialDelaySeconds: 20
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 10
+        name: otel-collector
+        ports:
+        - containerPort: 8006
+          protocol: TCP
+        - containerPort: 4317
+          protocol: TCP
+        - containerPort: 8888
+          name: metric-port
+          protocol: TCP
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 200m
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsGroup: 10000
+          runAsUser: 10000
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/paas/otel-collector/conf
+          name: otel-collector-config-vol
+          readOnly: true
+        - mountPath: /var/paas/sys/log
+          name: varpaassyslog
+        - mountPath: /etc/cipher/root.key
+          name: rootkey
+          readOnly: true
+        - mountPath: /etc/cipher/common_shared.key
+          name: commonsharedkey
+          readOnly: true
+        - mountPath: /var/paas/cert
+          name: cert
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      initContainers:
+      - command:
+        - /bin/sh
+        - -c
+        - mkdir -p /var/paas/sys/log/otel && chmod 750 /var/paas/sys/log/otel && chown
+          -R 10000:10000 /var/paas/sys/log
+        image: swr.tr-west-1.myhuaweicloud.com/hwofficial/otelcol:1.7.3
+        imagePullPolicy: IfNotPresent
+        name: init
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/paas/sys/log
+          name: varpaassyslog
+      priorityClassName: system-cluster-critical
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 10000
+      serviceAccount: log-agent-serviceaccount
+      serviceAccountName: log-agent-serviceaccount
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 30
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 30
+      - key: role
+        operator: Exists
+      - effect: NoSchedule
+        key: distribution.io/category
+        operator: Equal
+        value: IES
+      volumes:
+      - configMap:
+          defaultMode: 416
+          name: log-agent-otel-collector-config
+        name: otel-collector-config-vol
+      - name: cert
+        secret:
+          defaultMode: 416
+          items:
+          - key: caCert
+            path: caCert
+          - key: serverCert
+            path: serverCert
+          - key: serverKey
+            path: serverKey
+          secretName: log-agent-cert-secret
+      - hostPath:
+          path: /var/paas/sys/log
+          type: ""
+        name: varpaassyslog
+      - hostPath:
+          path: /var/paas/srv/kubernetes/root.key
+          type: ""
+        name: rootkey
+      - hostPath:
+          path: /var/paas/srv/kubernetes/common_shared.key
+          type: ""
+        name: commonsharedkey
+status:
+  availableReplicas: 2
+  conditions:
+  - lastTransitionTime: "2025-08-01T10:27:53Z"
+    lastUpdateTime: "2025-08-01T10:27:53Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2025-08-01T10:27:48Z"
+    lastUpdateTime: "2025-08-01T10:27:53Z"
+    message: ReplicaSet "log-agent-otel-collector-746cbf4d5f" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 1
+  readyReplicas: 2
+  replicas: 2
+  updatedReplicas: 2
