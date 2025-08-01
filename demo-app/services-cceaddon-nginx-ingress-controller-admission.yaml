@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-nginx-ingress
+    meta.helm.sh/release-namespace: demo-app
+  creationTimestamp: "2025-08-01T10:36:36Z"
+  labels:
+    app: nginx-ingress-admission
+    app.kubernetes.io/managed-by: Helm
+    chart: nginx-ingress-3.0.34
+    component: controller
+    heritage: Helm
+    release: cceaddon-nginx-ingress
+  name: cceaddon-nginx-ingress-controller-admission
+  namespace: demo-app
+  resourceVersion: "27760"
+  uid: 3611c1f5-63b9-4f08-8d8c-2855547e010d
+spec:
+  clusterIP: 10.247.165.4
+  clusterIPs:
+  - 10.247.165.4
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: https-webhook
+    port: 443
+    protocol: TCP
+    targetPort: webhook
+  selector:
+    app: nginx-ingress
+    component: controller
+    release: cceaddon-nginx-ingress
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
