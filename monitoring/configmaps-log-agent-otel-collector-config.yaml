@@ -1,0 +1,642 @@
+apiVersion: v1
+data:
+  otel-collector.yaml: |
+    receivers:
+        fluentforward:
+            endpoint: ${POD_IP}:8006
+            tls:
+                cert_file: /var/paas/cert/serverCert
+                key_file: /var/paas/cert/serverKey
+                client_ca_file: /var/paas/cert/caCert
+        k8s_events: {}
+    processors:
+        batch/default-event:
+            timeout: 1s
+            send_batch_size: 500
+            send_batch_max_size: 1000
+        batch/default-event-aom-Normal:
+            timeout: 1s
+            send_batch_size: 500
+            send_batch_max_size: 1000
+        batch/default-event-aom-Warning:
+            timeout: 1s
+            send_batch_size: 500
+            send_batch_max_size: 1000
+        batch/logs:
+            send_batch_size: 2000
+            send_batch_max_size: 2000
+        filter/default-event-aom-Normal:
+            logs:
+                include:
+                    match_type: regexp
+                    record_attributes:
+                        - key: k8s.event.reason
+                          value: (NotTriggerScaleUp|FixNodeGroupSizeError|NodePoolSoldOut|TriggeredScaleUp|ScaleDown|FixNodeGroupSizeDone|NodePoolAvailable|ScaleUpTimedOut|ScaleUpFailed|NodeGroupInBackOff|WaitClaimForDeletionTi|ScaledUpGroup|StartScaledUpGroup|StartScaleDownEmpty|ScaleDownEmpty|DeleteUnregistered|SuccessfulCreate|SuccessfulUpdate|SuccessfulRollback|SuccessfulDelete|SuccessfulScaleIn|SuccessfulScaleOut|SuccessfulStandBy|SuccessfulActive|SuccessfulRestart|Started|SuccessfulReconfig|Healthy|Scheduled|Pulled|Pulling|Disabled|InfraChanged|DeadlineExceeded|Killing|NodeControllerEviction|NodeNotReady|NodeHasInsufficientMem|NodeHasDiskPressure|NodeOutOfDisk|NodeNotSchedulable|NetworkCardNotFound|CNIIsDown|DOCKERIsDown|KUBEPROXYIsDown|NTPIsDown|InitializedConditionTi|NodeReady|NodeHasSufficientMemor|NodeHasNoDiskPressure|NodeHasSufficientDisk|NodeSchedulable|NetworkCardFound|CNIIsUp|DOCKERIsUp|KUBELETIsUp|KUBEPROXYIsUp|NTPIsUp|Rebooted|CIDRNotAvailable|CIDRAssignmentFailed|ConntrackFull|UnregisterNetDevice|KernelOops|AUFSUmountHung|DockerHung|FilesystemIsReadOnly|InsufficientLocalStora|InvalidStoragePool|Starting|DeletingNode|RegisteredNode|SelectingAll|DeploymentRollback|SelectorOverlap|ScalingReplicaSet|DeletingDeployment|CreatedLoadBalancer|UpdatedLoadBalancer|DeletedLoadBalancer|Type|LoadBalancerSourceRang|LoadbalancerIP|ExternalIP|UID|VolumeRecycled|VolumeDelete|RecyclerPod|ProvisioningIgnoreAlph|ExternalProvisioning|FailedGet|FailedUpdate|FailedList|SawCompletedJob|MissingJob|DeleteNodeWithNoServer|NoNodePoolsAutoscalingEnable|ScaleGroupAvailable|WaitClaimForDeletion|ClusterAutoscalerCleanup|EvictedByVPA|UpdateHPASuccess|SkipUpdateHPA|SkipUpdateTarget|UpdateTargetSuccess|SuccessfulRescale|MetricScaleSuccess|CronScaleSuccess)
+                    severity_texts:
+                        - Normal
+        filter/default-event-aom-Warning:
+            logs:
+                include:
+                    match_type: regexp
+                    severity_texts:
+                        - Warning
+        filter/default-stdout:
+            logs:
+                include:
+                    match_type: strict
+                    record_attributes:
+                        - key: logconfig
+                          value: default-stdout
+    exporters:
+        aom/default-event-aom:
+            endpoint: https://aom.tr-west-1.myhuaweicloud.com
+            events:
+                - name: DeleteNodeWithNoServer
+                  name_cn: 废弃节点清理
+                  resource_type: Namespace
+                - name: NodeHasSufficientDisk
+                  resource_type: Node
+                - name: CIDRAssignmentFailed
+                  name_cn: CIDR分配失败
+                  resource_type: Node
+                - name: DockerHung
+                  name_cn: 节点docker夯住
+                  resource_type: Node
+                - name: DOCKERIsDown
+                  name_cn: 节点docker故障
+                  resource_type: Node
+                - name: NodeReady
+                  severity: Info
+                  resource_type: Node
+                - name: NodeNotSchedulable
+                  name_cn: 节点不可调度
+                  severity: Major
+                  resource_type: Node
+                - name: NodeHasSufficientMemory
+                  resource_type: Node
+                - name: NTPIsUp
+                  resource_type: Node
+                - name: NodeNotReady
+                  name_cn: 节点状态异常
+                  severity: Major
+                  resource_type: Node
+                - name: NodeHasInsufficientMemory
+                  name_cn: 节点内存空间不足
+                  resource_type: Node
+                - name: FilesystemIsReadOnly
+                  name_cn: 节点文件系统只读
+                  resource_type: Node
+                - name: CNIIsUp
+                  resource_type: Node
+                - name: CIDRNotAvailable
+                  name_cn: CIDR不可用
+                  resource_type: Node
+                - name: NodeCreateFailed
+                  name_cn: 节点创建失败
+                  severity: Major
+                  resource_type: Node
+                - name: TaskHung
+                  name_cn: 节点任务夯住
+                  resource_type: Node
+                - name: InsufficientLocalStorage
+                  name_cn: 节点本地存储池资源即将不足
+                  resource_type: Node
+                - name: NodeHasDiskPressure
+                  name_cn: 节点磁盘空间不足
+                  resource_type: Node
+                - name: NetworkCardNotFound
+                  name_cn: 网卡未发现
+                  resource_type: Node
+                - name: NodeHasNoDiskPressure
+                  resource_type: Node
+                - name: KUBEPROXYIsUp
+                  resource_type: Node
+                - name: NodeInstallFailed
+                  name_cn: 节点纳管失败
+                  severity: Minor
+                  resource_type: Node
+                - name: Rebooted
+                  name_cn: 节点重启
+                  severity: Major
+                  resource_type: Node
+                - name: OOMKilling
+                  name_cn: 节点内存不足强杀进程
+                  resource_type: Node
+                - name: UnregisterNetDevice
+                  name_cn: 节点上发现未注册的网络设备
+                  resource_type: Node
+                - name: KUBEPROXYIsDown
+                  name_cn: 节点kube-proxy故障
+                  resource_type: Node
+                - name: NTPIsDown
+                  name_cn: 节点ntp服务故障
+                  resource_type: Node
+                - name: InvalidStoragePool
+                  name_cn: 存储池配置有误
+                  resource_type: Node
+                - name: DOCKERIsUp
+                  resource_type: Node
+                - name: NodeOutOfDisk
+                  name_cn: 节点磁盘空间已满
+                  resource_type: Node
+                - name: CNIIsDown
+                  name_cn: 节点cni插件故障
+                  resource_type: Node
+                - name: ConntrackFull
+                  name_cn: 节点的连接跟踪表已满
+                  resource_type: Node
+                - name: KernelOops
+                  name_cn: 节点操作系统内核故障
+                  resource_type: Node
+                - name: AUFSUmountHung
+                  name_cn: 节点磁盘卸载夯住
+                  resource_type: Node
+                - name: Starting
+                  resource_type: Node
+                - name: RegisteredNode
+                  resource_type: Node
+                - name: InitializedConditionTimeout
+                  name_cn: 等待节点自定义Condition完成超时
+                  severity: Major
+                  resource_type: Node
+                - name: NodeSchedulable
+                  severity: Info
+                  resource_type: Node
+                - name: KUBELETIsUp
+                  resource_type: Node
+                - name: DeletingNode
+                  resource_type: Node
+                - name: KUBELETIsDown
+                  name_cn: 节点kubelet故障
+                  resource_type: Node
+                - name: NetworkCardFound
+                  resource_type: Node
+                - name: DeploymentRollbackRevisionNotFound
+                  name_cn: 部署回滚版本未发现
+                  resource_type: Deployment
+                - name: DeploymentRollback
+                  resource_type: Deployment
+                - name: ReplicaSetCreateError
+                  name_cn: 副本集创建异常
+                  resource_type: Deployment
+                - name: SelectingAll
+                  name_cn: 标签选择器异常
+                  resource_type: Deployment
+                - name: SelectorOverlap
+                  name_cn: 标签选择器冲突
+                  resource_type: Deployment
+                - name: ScalingReplicaSet
+                  resource_type: Deployment
+                - name: DeletingDeployment
+                  resource_type: Deployment
+                - name: SuccessfulCreate
+                  resource_type: ReplicaSet
+                - name: SuccessfulDelete
+                  resource_type: ReplicaSet
+                - name: FailedCreate
+                  name_cn: 创建失败
+                  resource_type: ReplicaSet
+                - name: FailedDelete
+                  name_cn: 删除失败
+                  resource_type: ReplicaSet
+                - name: VolumeUnknownReclaimPolicy
+                  name_cn: 卷回收策略未知
+                  resource_type: PersistentVolume
+                - name: AttachVolumeFailed
+                  name_cn: 主机挂载块存储失败
+                  resource_type: PersistentVolume
+                - name: MountDeviceFailed
+                  name_cn: 挂载盘符失败
+                  resource_type: PersistentVolume
+                - name: VolumeFailedRecycle
+                  name_cn: 数据卷回收失败
+                  resource_type: PersistentVolume
+                - name: VolumeRecycled
+                  resource_type: PersistentVolume
+                - name: VolumeDelete
+                  resource_type: PersistentVolume
+                - name: WaitForAttachVolumeFailed
+                  name_cn: 等待主机挂载块存储失败
+                  resource_type: PersistentVolume
+                - name: UnmountDeviceFailed
+                  name_cn: 卸载盘符失败
+                  resource_type: PersistentVolume
+                - name: SetUpAtVolumeFailed
+                  name_cn: 挂载数据卷失败
+                  resource_type: PersistentVolume
+                - name: TearDownAtVolumeFailed
+                  name_cn: 卸载数据卷失败
+                  resource_type: PersistentVolume
+                - name: VolumeFailedDelete
+                  name_cn: 数据卷删除失败
+                  resource_type: PersistentVolume
+                - name: RecyclerPod
+                  resource_type: PersistentVolume
+                - name: DetachVolumeFailed
+                  name_cn: 主机卸载块存储失败
+                  resource_type: PersistentVolume
+                - name: ClaimMisbound
+                  name_cn: 卷误绑定
+                  resource_type: PersistentVolumeClaim
+                - name: ProvisioningFailed
+                  name_cn: 创建卷失败
+                  severity: Minor
+                  resource_type: PersistentVolumeClaim
+                - name: ProvisioningCleanupFailed
+                  name_cn: 创建卷清理失败
+                  resource_type: PersistentVolumeClaim
+                - name: ProvisioningIgnoreAlpha
+                  resource_type: PersistentVolumeClaim
+                - name: ExternalProvisioning
+                  resource_type: PersistentVolumeClaim
+                - name: VolumeResizeFailed
+                  name_cn: 数据卷扩容失败
+                  resource_type: PersistentVolumeClaim
+                - name: ClaimLost
+                  name_cn: 卷PVC丢失
+                  resource_type: PersistentVolumeClaim
+                - name: FailedCreate
+                  name_cn: 创建失败
+                  resource_type: CronJob
+                - name: FailedDelete
+                  name_cn: 删除失败
+                  resource_type: CronJob
+                - name: SuccessfulCreate
+                  resource_type: CronJob
+                - name: SawCompletedJob
+                  resource_type: CronJob
+                - name: SuccessfulDelete
+                  resource_type: CronJob
+                - name: FailedGet
+                  name_cn: 查询失败
+                  resource_type: CronJob
+                - name: FailedUpdate
+                  name_cn: 更新失败
+                  resource_type: CronJob
+                - name: FailedList
+                  name_cn: 查询Pod列表失败
+                  resource_type: CronJob
+                - name: UnexpectedJob
+                  name_cn: 未知Job
+                  resource_type: CronJob
+                - name: MissingJob
+                  resource_type: CronJob
+                - name: FailedDelete
+                  name_cn: 删除失败
+                  resource_type: Job
+                - name: SuccessfulCreate
+                  resource_type: Job
+                - name: SuccessfulDelete
+                  resource_type: Job
+                - name: TooManyActivePods
+                  name_cn: 太多活跃Pod
+                  resource_type: Job
+                - name: TooManySucceededPods
+                  name_cn: 太多成功Pod
+                  resource_type: Job
+                - name: DeadlineExceeded
+                  resource_type: Job
+                - name: FailedCreate
+                  name_cn: 创建失败
+                  resource_type: Job
+                - name: FailedPullImage
+                  name_cn: 拉取镜像失败
+                  severity: Major
+                  resource_type: Pod
+                - name: Pulled
+                  severity: Info
+                  resource_type: Pod
+                - name: NodeControllerEviction
+                  resource_type: Pod
+                - name: FailedUpdate
+                  name_cn: 更新失败
+                  resource_type: Pod
+                - name: FailedScaleIn
+                  name_cn: 缩容失败
+                  resource_type: Pod
+                - name: FailedReconfig
+                  name_cn: 更新配置失败
+                  resource_type: Pod
+                - name: Pulling
+                  resource_type: Pod
+                - name: DeadlineExceeded
+                  resource_type: Pod
+                - name: FailedStandBy
+                  name_cn: 待机失败
+                  resource_type: Pod
+                - name: FailedRestart
+                  name_cn: 重启失败
+                  resource_type: Pod
+                - name: FailedStart
+                  name_cn: 启动失败
+                  severity: Major
+                  resource_type: Pod
+                - name: Unhealthy
+                  name_cn: 状态异常
+                  resource_type: Pod
+                - name: SuccessfulRestart
+                  resource_type: Pod
+                - name: Scheduled
+                  severity: Info
+                  resource_type: Pod
+                - name: FailedActive
+                  name_cn: 激活失败
+                  resource_type: Pod
+                - name: SuccessfulRollback
+                  resource_type: Pod
+                - name: SuccessfulCreate
+                  severity: Info
+                  resource_type: Pod
+                - name: SuccessfulScaleOut
+                  resource_type: Pod
+                - name: Started
+                  severity: Info
+                  resource_type: Pod
+                - name: ErrImageNeverPull
+                  name_cn: 未拉取镜像异常
+                  resource_type: Pod
+                - name: Killing
+                  resource_type: Pod
+                - name: FailedScaleOut
+                  name_cn: 扩容失败
+                  resource_type: Pod
+                - name: BackOffStart
+                  name_cn: 启动重试失败
+                  severity: Major
+                  resource_type: Pod
+                - name: FailedMount
+                  name_cn: 实例挂卷失败
+                  severity: Major
+                  resource_type: Pod
+                - name: SuccessfulScaleIn
+                  resource_type: Pod
+                - name: SuccessfulActive
+                  resource_type: Pod
+                - name: InfraChanged
+                  resource_type: Pod
+                - name: FailedCreate
+                  name_cn: 创建失败
+                  severity: Major
+                  resource_type: Pod
+                - name: FailedRollback
+                  name_cn: 回滚失败
+                  resource_type: Pod
+                - name: SuccessfulStandBy
+                  resource_type: Pod
+                - name: SuccessfulReconfig
+                  resource_type: Pod
+                - name: Healthy
+                  resource_type: Pod
+                - name: FailedDelete
+                  name_cn: 删除失败
+                  severity: Minor
+                  resource_type: Pod
+                - name: FailedScheduling
+                  name_cn: 调度失败
+                  severity: Major
+                  resource_type: Pod
+                - name: BackOffPullImage
+                  name_cn: 拉取镜像重试失败
+                  severity: Major
+                  resource_type: Pod
+                - name: PodOOMKilling
+                  name_cn: Pod内存不足OOM
+                  severity: Major
+                  resource_type: Pod
+                - name: AllocationFailed
+                  name_cn: Pod分配资源失败
+                  severity: Major
+                  resource_type: Pod
+                - name: SuccessfulUpdate
+                  resource_type: Pod
+                - name: SuccessfulDelete
+                  severity: Info
+                  resource_type: Pod
+                - name: Disabled
+                  resource_type: Pod
+                - name: FailedCreate
+                  name_cn: 创建失败
+                  resource_type: DaemonSet
+                - name: FailedDelete
+                  name_cn: 删除失败
+                  resource_type: DaemonSet
+                - name: SuccessfulCreate
+                  resource_type: DaemonSet
+                - name: SuccessfulDelete
+                  resource_type: DaemonSet
+                - name: SelectingAll
+                  name_cn: 标签选择器异常
+                  resource_type: DaemonSet
+                - name: FailedPlacement
+                  resource_type: DaemonSet
+                - name: FailedCreate
+                  name_cn: 创建失败
+                  resource_type: StatefulSet
+                - name: FailedDelete
+                  name_cn: 删除失败
+                  resource_type: StatefulSet
+                - name: SuccessfulCreate
+                  resource_type: StatefulSet
+                - name: SuccessfulDelete
+                  resource_type: StatefulSet
+                - name: SuccessfulDelete
+                  resource_type: ReplicationController
+                - name: FailedCreate
+                  name_cn: 创建失败
+                  resource_type: ReplicationController
+                - name: FailedDelete
+                  name_cn: 删除失败
+                  resource_type: ReplicationController
+                - name: SuccessfulCreate
+                  resource_type: ReplicationController
+                - name: UID
+                  resource_type: Service
+                - name: CreatingLoadBalancerFailed
+                  name_cn: 创建负载均衡失败
+                  severity: Minor
+                  resource_type: Service
+                - name: DeletingLoadBalancerFailed
+                  name_cn: 删除负载均衡失败
+                  severity: Minor
+                  resource_type: Service
+                - name: Type
+                  resource_type: Service
+                - name: LoadBalancerSourceRanges
+                  resource_type: Service
+                - name: LoadbalancerIP
+                  resource_type: Service
+                - name: UpdateLoadBalancerFailed
+                  name_cn: 更新负载均衡失败
+                  severity: Minor
+                  resource_type: Service
+                - name: CreatedLoadBalancer
+                  severity: Info
+                  resource_type: Service
+                - name: UpdatedLoadBalancer
+                  severity: Info
+                  resource_type: Service
+                - name: DeletedLoadBalancer
+                  severity: Info
+                  resource_type: Service
+                - name: ExternalIP
+                  resource_type: Service
+                - name: NodeGroupInBackOff
+                  name_cn: 节点池退避重试中
+                  severity: Major
+                - name: WaitClaimForDeletionTimeout
+                  name_cn: 缩容节点等待超时
+                  severity: Major
+                - name: DeleteUnregisteredFailed
+                  name_cn: 删除未注册节点失败
+                  severity: Major
+                - name: NodePoolSoldOut
+                  name_cn: 节点池资源售罄
+                  severity: Major
+                - name: TriggeredScaleUp
+                  name_cn: 触发节点扩容
+                  severity: Major
+                - name: ScaleUpTimedOut
+                  name_cn: 扩容节点超时
+                  severity: Major
+                - name: StartScaleDownEmpty
+                  name_cn: 缩容空闲节点启动
+                  severity: Major
+                - name: DeleteUnregistered
+                  name_cn: 删除未注册节点成功
+                  severity: Major
+                - name: ScaleDownFailed
+                  name_cn: 缩容节点失败
+                  severity: Major
+                - name: FixNodeGroupSizeError
+                  name_cn: 修复节点池节点个数失败
+                  severity: Major
+                - name: FixNodeGroupSizeDone
+                  name_cn: 修复节点池节点个数成功
+                  severity: Major
+                - name: NodePoolAvailable
+                  name_cn: 节点池资源充足
+                  severity: Major
+                - name: ScaleUpFailed
+                  name_cn: 扩容节点失败
+                  severity: Major
+                - name: ScaleDownEmpty
+                  name_cn: 缩容空闲节点成功
+                  severity: Major
+                - name: NotTriggerScaleUp
+                  name_cn: 未触发节点扩容
+                  severity: Major
+                - name: FailedToScaleUpGroup
+                  name_cn: 节点池扩容节点失败
+                  severity: Major
+                - name: ScaleDown
+                  name_cn: 缩容节点
+                  severity: Major
+                - name: NodeUninstallFailed
+                  name_cn: 节点卸载失败
+                - name: FailedGetHorizontalPodAutoscaler
+                  name_cn: 查询CornHPA策略失败
+                  severity: Major
+                - name: FailedGetHpaScale
+                  name_cn: 查询CornHPA规格失败
+                  severity: Major
+                - name: ScaleFailed
+                  name_cn: CronHPA伸缩失败
+                  severity: Major
+                - name: NoNodePoolsAutoscalingEnable
+                  name_cn: 禁用节点池伸缩
+                  severity: Info
+                - name: ScaleGroupAvailable
+                  name_cn: 节点池伸缩组可用
+                  severity: Info
+                - name: ScaledUpGroup
+                  name_cn: 节点池扩容节点成功
+                  severity: Info
+                - name: StartScaledUpGroup
+                  name_cn: 开始节点池扩容
+                  severity: Info
+                - name: QuotaInsufficient
+                  name_cn: 节点池资源配额不足
+                  severity: Info
+                - name: SuccessfulRescale
+                  name_cn: Pod扩缩容成功
+                  severity: Info
+                - name: MetricScaleSuccess
+                  severity: Info
+                - name: CronScaleSuccess
+                  severity: Info
+                - name: EvictedByVPA
+                  name_cn: Pod被VPA驱逐
+                  severity: Info
+                - name: WaitClaimForDeletion
+                  name_cn: 等待缩容节点
+                  severity: Info
+                - name: UpdateHPASuccess
+                  name_cn: 更新HPA策略成功
+                  severity: Info
+                - name: SkipUpdateHPA
+                  name_cn: 跳过更新HPA策略
+                  severity: Info
+                - name: UpdateTargetSuccess
+                  name_cn: 更新工作负载实例数成功
+                  severity: Info
+                - name: SkipUpdateTarget
+                  name_cn: 跳过更新工作负载实例数
+                  severity: Info
+        lts/default-event:
+            lts_group_id: c0f7257b-df33-4b39-bb33-d7f374725730
+            lts_stream_id: 935b11c4-2234-44c1-a15d-522ffa0988d9
+            log_type: event
+            endpoint: https://100.125.8.20:8102
+            compress_type: gzip
+        lts/default-stdout:
+            lts_group_id: c0f7257b-df33-4b39-bb33-d7f374725730
+            lts_stream_id: ffc11e99-4a5c-418f-85fb-e768e6974baa
+            log_type: log
+            endpoint: https://100.125.8.20:8102
+            compress_type: gzip
+    service:
+        telemetry:
+            metrics:
+                level: basic
+                address: ${POD_IP}:8888
+        pipelines:
+            logs/default-event:
+                receivers:
+                    - k8s_events
+                processors:
+                    - batch/default-event
+                exporters:
+                    - lts/default-event
+            logs/default-event-aom-Normal:
+                receivers:
+                    - k8s_events
+                processors:
+                    - filter/default-event-aom-Normal
+                    - batch/default-event-aom-Normal
+                exporters:
+                    - aom/default-event-aom
+            logs/default-event-aom-Warning:
+                receivers:
+                    - k8s_events
+                processors:
+                    - filter/default-event-aom-Warning
+                    - batch/default-event-aom-Warning
+                exporters:
+                    - aom/default-event-aom
+            logs/default-stdout:
+                receivers:
+                    - fluentforward
+                processors:
+                    - filter/default-stdout
+                    - batch/logs
+                exporters:
+                    - lts/default-stdout
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2025-08-01T10:27:37Z"
+  labels:
+    app: log-operator
+  name: log-agent-otel-collector-config
+  namespace: monitoring
+  resourceVersion: "23862"
+  uid: e3f2f4ec-dd2b-4bc9-bf04-b4e7175b41b2
