@@ -1,0 +1,33 @@
+apiVersion: v1
+data:
+  allow-backend-server-header: "false"
+  enable-underscores-in-headers: "false"
+  generate-request-id: "true"
+  ignore-invalid-headers: "true"
+  keep-alive-requests: "100"
+  max-worker-connections: "65536"
+  proxy-body-size: 20m
+  proxy-connect-timeout: "10"
+  reuse-port: "true"
+  server-tokens: "false"
+  ssl-redirect: "false"
+  upstream-keepalive-connections: "320"
+  upstream-keepalive-timeout: "900"
+  worker-cpu-affinity: auto
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-nginx-ingress
+    meta.helm.sh/release-namespace: demo-app
+  creationTimestamp: "2025-08-01T10:36:36Z"
+  labels:
+    app: nginx-ingress
+    app.kubernetes.io/managed-by: Helm
+    chart: nginx-ingress-3.0.34
+    component: controller
+    heritage: Helm
+    release: cceaddon-nginx-ingress
+  name: cceaddon-nginx-ingress-controller
+  namespace: demo-app
+  resourceVersion: "27750"
+  uid: afefa681-ffc8-4277-a00f-27e3037ef8d5
