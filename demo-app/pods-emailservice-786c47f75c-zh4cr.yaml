@@ -1,0 +1,177 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    localdns.cce.io/servers: '["169.254.20.10"]'
+    node-local-dns-webhook.k8s.io/status: injected
+  creationTimestamp: "2025-08-01T10:34:12Z"
+  generateName: emailservice-786c47f75c-
+  labels:
+    app: emailservice
+    pod-template-hash: 786c47f75c
+  name: emailservice-786c47f75c-zh4cr
+  namespace: demo-app
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: emailservice-786c47f75c
+    uid: 42b07e18-53a3-4ff3-aa8d-69d902db6d8d
+  resourceVersion: "26871"
+  uid: 81d9201c-8805-47ee-be1f-af6de1c86d4f
+spec:
+  containers:
+  - env:
+    - name: PORT
+      value: "8080"
+    - name: DISABLE_PROFILER
+      value: "1"
+    image: swr.tr-west-1.myhuaweicloud.com/cce-training/emailservice:latest
+    imagePullPolicy: Always
+    livenessProbe:
+      failureThreshold: 3
+      grpc:
+        port: 8080
+        service: ""
+      periodSeconds: 5
+      successThreshold: 1
+      timeoutSeconds: 1
+    name: server
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+    readinessProbe:
+      failureThreshold: 3
+      grpc:
+        port: 8080
+        service: ""
+      periodSeconds: 5
+      successThreshold: 1
+      timeoutSeconds: 1
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 64Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      privileged: false
+      readOnlyRootFilesystem: true
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-nxtpb
+      readOnly: true
+  dnsConfig:
+    nameservers:
+    - 169.254.20.10
+    - 10.247.3.10
+    options:
+    - name: single-request-reopen
+      value: ""
+    - name: timeout
+      value: "2"
+    - name: ndots
+      value: "5"
+    searches:
+    - demo-app.svc.cluster.local
+    - svc.cluster.local
+    - cluster.local
+  dnsPolicy: None
+  enableServiceLinks: true
+  nodeName: 192.168.0.121
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 5
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-nxtpb
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:24Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:12Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:28Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:28Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:12Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://49ff7c95bed868f02d450b46dc5124d5a2bb148648c5baa9a0987e30a02f54f5
+    image: swr.tr-west-1.myhuaweicloud.com/cce-training/emailservice:latest
+    imageID: swr.tr-west-1.myhuaweicloud.com/cce-training/emailservice@sha256:8624d185da5eb49c6f73877a11f87d347d3e78d838821f1e4c8527d481a16003
+    lastState: {}
+    name: server
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:34:23Z"
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-nxtpb
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 192.168.0.121
+  hostIPs:
+  - ip: 192.168.0.121
+  phase: Running
+  podIP: 10.0.0.6
+  podIPs:
+  - ip: 10.0.0.6
+  qosClass: Burstable
+  startTime: "2025-08-01T10:34:12Z"
