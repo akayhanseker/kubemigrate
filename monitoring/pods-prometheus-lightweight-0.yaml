@@ -1,0 +1,534 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubectl.kubernetes.io/default-container: prometheus
+  creationTimestamp: "2025-08-01T10:27:23Z"
+  generateName: prometheus-lightweight-
+  labels:
+    app: prometheus-lightweight
+    app.kubernetes.io/instance: server
+    app.kubernetes.io/managed-by: prometheus-operator
+    app.kubernetes.io/name: prometheus
+    apps.kubernetes.io/pod-index: "0"
+    controller-revision-hash: prometheus-lightweight-55b4568b8
+    openvessel.io/monitoring-prometheus-mode: lightweight
+    operator.prometheus.io/name: server
+    prometheus: server
+    release: cceaddon-cie-collector
+    statefulset.kubernetes.io/pod-name: prometheus-lightweight-0
+  name: prometheus-lightweight-0
+  namespace: monitoring
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: StatefulSet
+    name: prometheus-lightweight
+    uid: 958b7d6c-35f6-4a4d-bb68-6bde389bfdb7
+  resourceVersion: "23976"
+  uid: 9b1b9f66-c0d8-4735-bbc5-e786b63d4623
+spec:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - prometheus-lightweight
+        topologyKey: kubernetes.io/hostname
+  automountServiceAccountToken: true
+  containers:
+  - command:
+    - bash
+    - -c
+    - /var/paas/prometheus-lightweight/prometheus-lightweight -envflag.enable=true
+      -http.openvessel.accessiblePaths=/metrics,/-/ready,/-/healthy,/-/reload,/targets,/api/v1/targets,/target_response
+      -http.openvessel.skipAuthPaths=/metrics,/-/ready,/-/healthy -httpListenAddr="${POD_IP}":9090
+      -loggerLevel=INFO -promagent.common.record-event=true -promscrape.config.strictParse=false
+      -promscrape.config=/etc/prometheus/config_out/prometheus.env.yaml -promscrape.maxScrapeSize=536870912
+      -promscrape.streamParse=true -promscrape.suppressDuplicateScrapeTargetErrors=true
+      -promscrape.suppressScrapeErrors=true -remoteWrite.bearerTokenFile="/etc/prometheus/lightweight-secret/remote_write_bearerToken_0"
+      -remoteWrite.headers=cluster_id:6203370f-6eb3-11f0-81dd-0255ac10003e^^cluster_name:kubemigrate
+      -remoteWrite.maxDiskUsagePerURL=2147483648 -remoteWrite.queues=1 -remoteWrite.showURL=true
+      -remoteWrite.tlsInsecureSkipVerify=true -remoteWrite.tmpDataPath=/etc/prometheus/persistent/lightweight-agent-remotewrite-data
+      -remoteWrite.url=https://aom-internal-access.tr-west-1.myhuaweicloud.com:8443/v1/b19971231bdf44d4b926977511fd59e1/b95bcf8f-43a8-46b5-a510-5247f95a187d/push
+    env:
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    - name: HOSTNAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: PAAS_CRYPTO_PATH
+      value: /etc/cipher
+    - name: CRYPTO_ENABLE
+      value: "true"
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: POD_UID
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.uid
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/prometheus-lightweight:3.12.1
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 6
+      httpGet:
+        path: /-/healthy
+        port: 9090
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 30
+      successThreshold: 1
+      timeoutSeconds: 30
+    name: prometheus
+    ports:
+    - containerPort: 9090
+      name: web
+      protocol: TCP
+    readinessProbe:
+      failureThreshold: 5
+      httpGet:
+        path: /-/healthy
+        port: 9090
+        scheme: HTTP
+      initialDelaySeconds: 5
+      periodSeconds: 30
+      successThreshold: 1
+      timeoutSeconds: 20
+    resources:
+      limits:
+        cpu: "4"
+        memory: 8Gi
+      requests:
+        cpu: 500m
+        memory: 500Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+    startupProbe:
+      failureThreshold: 12
+      httpGet:
+        path: /-/ready
+        port: 9090
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 15
+      successThreshold: 1
+      timeoutSeconds: 2
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: FallbackToLogsOnError
+    volumeMounts:
+    - mountPath: /etc/prometheus/persistent/lightweight-agent-remotewrite-data
+      name: persistent-queue-data
+    - mountPath: /etc/prometheus/config
+      name: config
+      readOnly: true
+    - mountPath: /etc/prometheus/config_out
+      name: config-out
+      readOnly: true
+    - mountPath: /etc/prometheus/lightweight-config
+      name: lightweight-config
+      readOnly: true
+    - mountPath: /etc/prometheus/lightweight-secret
+      name: lightweight-security-config
+      readOnly: true
+    - mountPath: /etc/prometheus/certs
+      name: tls-assets
+      readOnly: true
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+    - mountPath: /etc/localtime
+      name: localtime-by-operator
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-42ccs
+      readOnly: true
+  - args:
+    - --listen-address=$(POD_IP):8080
+    - --reload-url=http://$(POD_IP):9090/-/reload
+    - --config-file=/etc/prometheus/config/prometheus.yaml.gz
+    - --config-envsubst-file=/etc/prometheus/config_out/prometheus.env.yaml
+    - --watched-dir=/etc/prometheus/lightweight-config
+    command:
+    - /bin/prometheus-config-reloader
+    env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: SHARD
+      value: "-1"
+    - name: PAAS_CRYPTO_PATH
+      value: /etc/cipher
+    - name: CRYPTO_ENABLE
+      value: "true"
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/prometheus-config-reloader:3.12.1
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 10
+      httpGet:
+        path: /livez
+        port: 8080
+        scheme: HTTP
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 3
+    name: config-reloader
+    resources:
+      limits:
+        cpu: 200m
+        memory: 100Mi
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: FallbackToLogsOnError
+    volumeMounts:
+    - mountPath: /etc/prometheus/config
+      name: config
+    - mountPath: /etc/prometheus/config_out
+      name: config-out
+    - mountPath: /etc/prometheus/lightweight-config
+      name: lightweight-config
+      readOnly: true
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-42ccs
+      readOnly: true
+  dnsConfig:
+    options:
+    - name: ndots
+      value: "4"
+    - name: single-request-reopen
+      value: ""
+    - name: timeout
+      value: "2"
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  hostname: prometheus-lightweight-0
+  imagePullSecrets:
+  - name: default-secret
+  initContainers:
+  - args:
+    - --watch-interval=0
+    - --config-file=/etc/prometheus/config/prometheus.yaml.gz
+    - --config-envsubst-file=/etc/prometheus/config_out/prometheus.env.yaml
+    - --watched-dir=/etc/prometheus/lightweight-config
+    command:
+    - /bin/prometheus-config-reloader
+    env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: SHARD
+      value: "-1"
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/prometheus-config-reloader:3.12.1
+    imagePullPolicy: IfNotPresent
+    name: init-config-reloader
+    resources:
+      limits:
+        cpu: 200m
+        memory: 100Mi
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: FallbackToLogsOnError
+    volumeMounts:
+    - mountPath: /etc/prometheus/config
+      name: config
+    - mountPath: /etc/prometheus/config_out
+      name: config-out
+    - mountPath: /etc/prometheus/lightweight-config
+      name: lightweight-config
+      readOnly: true
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-42ccs
+      readOnly: true
+  nodeName: 192.168.0.35
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 10000
+    runAsGroup: 10000
+    runAsNonRoot: true
+    runAsUser: 10000
+  serviceAccount: prometheus-server
+  serviceAccountName: prometheus-server
+  terminationGracePeriodSeconds: 120
+  tolerations:
+  - effect: NoSchedule
+    key: distribution.io/category
+    operator: Equal
+    value: IES
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - emptyDir:
+      sizeLimit: 5Gi
+    name: persistent-queue-data
+  - name: config
+    secret:
+      defaultMode: 420
+      secretName: prometheus-server
+  - emptyDir: {}
+    name: config-out
+  - configMap:
+      defaultMode: 420
+      name: prometheus-lightweight-config
+    name: lightweight-config
+  - name: lightweight-security-config
+    secret:
+      defaultMode: 416
+      optional: true
+      secretName: prometheus-lightweight-secret
+  - name: tls-assets
+    projected:
+      defaultMode: 420
+      sources:
+      - secret:
+          name: prometheus-server-tls-assets-0
+  - hostPath:
+      path: /var/paas/srv/kubernetes/root.key
+      type: ""
+    name: rootkey
+  - hostPath:
+      path: /var/paas/srv/kubernetes/common_shared.key
+      type: ""
+    name: commonsharedkey
+  - hostPath:
+      path: /etc/localtime
+      type: ""
+    name: localtime-by-operator
+  - name: kube-api-access-42ccs
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:28Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:28Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:50Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:50Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:23Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://cbd5b484844891515df938e1aeae41bbd57e2870c4c4707b97a1f973bf3d8f63
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/prometheus-config-reloader:3.12.1
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/prometheus-config-reloader@sha256:c5bc0e40ba39595ee6754d884d803061f5543adc89aacc3c34ecc68f8c85b0ba
+    lastState: {}
+    name: config-reloader
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:27:29Z"
+    volumeMounts:
+    - mountPath: /etc/prometheus/config
+      name: config
+    - mountPath: /etc/prometheus/config_out
+      name: config-out
+    - mountPath: /etc/prometheus/lightweight-config
+      name: lightweight-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-42ccs
+      readOnly: true
+      recursiveReadOnly: Disabled
+  - containerID: containerd://296b764c56fd21704956504465446376d2db2e9030e394da8afc1a1684c2766f
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/prometheus-lightweight:3.12.1
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/prometheus-lightweight@sha256:dc0a97385584182bc112edcb6b777948ce765d06a8dc0aaa1ecf61a9f32a9762
+    lastState: {}
+    name: prometheus
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:27:29Z"
+    volumeMounts:
+    - mountPath: /etc/prometheus/persistent/lightweight-agent-remotewrite-data
+      name: persistent-queue-data
+    - mountPath: /etc/prometheus/config
+      name: config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/prometheus/config_out
+      name: config-out
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/prometheus/lightweight-config
+      name: lightweight-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/prometheus/lightweight-secret
+      name: lightweight-security-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/prometheus/certs
+      name: tls-assets
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/localtime
+      name: localtime-by-operator
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-42ccs
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 192.168.0.35
+  hostIPs:
+  - ip: 192.168.0.35
+  initContainerStatuses:
+  - containerID: containerd://c835db4aa472eada2843d20917072006b9e5766e34166e4ac68d304bf165ee02
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/prometheus-config-reloader:3.12.1
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/prometheus-config-reloader@sha256:c5bc0e40ba39595ee6754d884d803061f5543adc89aacc3c34ecc68f8c85b0ba
+    lastState: {}
+    name: init-config-reloader
+    ready: true
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: containerd://c835db4aa472eada2843d20917072006b9e5766e34166e4ac68d304bf165ee02
+        exitCode: 0
+        finishedAt: "2025-08-01T10:27:27Z"
+        reason: Completed
+        startedAt: "2025-08-01T10:27:27Z"
+    volumeMounts:
+    - mountPath: /etc/prometheus/config
+      name: config
+    - mountPath: /etc/prometheus/config_out
+      name: config-out
+    - mountPath: /etc/prometheus/lightweight-config
+      name: lightweight-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-42ccs
+      readOnly: true
+      recursiveReadOnly: Disabled
+  phase: Running
+  podIP: 10.0.1.130
+  podIPs:
+  - ip: 10.0.1.130
+  qosClass: Burstable
+  startTime: "2025-08-01T10:27:23Z"
