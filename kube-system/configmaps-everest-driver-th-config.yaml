@@ -1,0 +1,287 @@
+apiVersion: v1
+data:
+  localpv_thinpool_over_subscription: "80"
+  throttle.json: |-
+    {
+      "throttles": {
+        "ECS_ATTACH": {
+          "duration": "1m",
+          "burst": 540,
+          "description": "/v2/{project_id}/servers/{server_id}/os-volume_attachments"
+        },
+        "ECS_DETACH": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v2/{project_id}/servers/{server_id}/os-volume_attachments/{volume_id}"
+        },
+        "ECS_ATTACHV1": {
+          "duration": "1m",
+          "burst": 540,
+          "description": "/v1/{project_id}/cloudservers/{server_id}/attachvolume"
+        },
+        "ECS_DETACHV1": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/{project_id}/cloudservers/{server_id}/detachvolume/{volume_id}"
+        },
+        "ECS_CLOUD_SERVER_DETAIL_GET": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/{project_id}/cloudservers/{server_id}"
+        },
+        "ECS_CLOUD_SERVER_FLAVOR_GET": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/{project_id}/cloudservers/flavors"
+        },
+        "ECS_SERVER_ATTACHMENTS_GET": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v2.1/servers/{server_id}/block_device"
+        },
+        "ECS_SERVER_ATTACHMENTS_V1_GET": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/{project_id}/cloudservers/{server_id}/block_device/{volume_id}"
+        },
+        "ECS_SERVE_VM_DETAIL_GET": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1.0/servers"
+        },
+        "ECS_CLOUD_SERVER_JOB_GET": {
+          "duration": "1m",
+          "burst": 4500,
+          "description": "/v1/{project_id}/jobs/{job_id}"
+        },
+        "EVS_VOLUME_CREATE": {
+          "duration": "1m",
+          "burst": 1350,
+          "description": "/v2/{project_id}/volumes"
+        },
+        "EVS_OS_VENDOR_VOLUME_DETAIL_LIST": {
+          "duration": "1m",
+          "burst": 1800,
+          "description": "/v2/{project_id}/os-vendor-volumes/detail"
+        },
+        "EVS_JOB_GET": {
+          "duration": "1m",
+          "burst": 1800,
+          "description": "/v1/{project_id}/jobs/{job_id}"
+        },
+        "EVS_VOLUME_GET": {
+          "duration": "1m",
+          "burst": 3600,
+          "description": "/v2/{project_id}/os-vendor-volumes/{volume_id}"
+        },
+        "EVS_VOLUME_DETAIL_LIST": {
+          "duration": "1m",
+          "burst": 1800,
+          "description": "/v2/{project_id}/volumes/detail"
+        },
+        "EVS_VOLUME_DELETE": {
+          "duration": "1m",
+          "burst": 1350,
+          "description": "/v2/{project_id}/volumes/{volume_id}"
+        },
+
+        "EVS_VOLUME_LIST": {
+          "duration": "1m",
+          "burst": 1800,
+          "description": "/v2/{project_id}/volumes"
+        },
+        "EVS_VOLUME_TYPE_GET": {
+          "duration": "1m",
+          "burst": 2700,
+          "description": "/v2/{project_id}/types"
+        },
+        "EVS_VOLUME_EXPAND": {
+          "duration": "1m",
+          "burst": 270,
+          "description": "/v2/{project_id}/volumes/{volume_id}/action"
+        },
+        "EVS_METADATA_SET": {
+          "duration": "1m",
+          "burst": 1800,
+          "description": "/v2/{project_id}/volumes/{volume_id}/metadata"
+        },
+        "EVS_METADATA_DELETE": {
+          "duration": "1m",
+          "burst": 2700,
+          "description": "/v2/{project_id}/volumes/{volume_id}/metadata/{key}"
+        },
+        "EVS_METADATA_GET": {
+          "duration": "1m",
+          "burst": 2700,
+          "description": "/v2/{project_id}/volumes/{volume_id}/metadata"
+        },
+        "EVS_SERVER_ATTACHMENT_GET": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v2.1/servers/{server_id}/block_device/{volume_id}"
+        },
+        "EVS_SERVER_ATTACHMENT_V1_GET": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/{project_id}/cloudservers/{server_id}/block_device/{volume_id}"
+        },
+        "EVS_SNAPSHOT_CREATE": {
+          "duration": "1m",
+          "burst": 1800,
+          "description": "/v2/{project_id}/snapshots"
+        },
+        "EVS_SNAPSHOT_DELETE": {
+          "duration": "1m",
+          "burst": 1350,
+          "description": "/v2/{project_id}/snapshots/{snapshot_id}"
+        },
+        "EVS_SNAPSHOT_LIST": {
+          "duration": "1m",
+          "burst": 1800,
+          "description": "/v2/{project_id}/snapshots"
+        },
+        "EVS_SNAPSHOT_GET": {
+          "duration": "1m",
+          "burst": 2700,
+          "description": "/v2/{project_id}/snapshots/{snapshot_id}"
+        },
+        "EVS_CLOUD_VOLUME_CREATE": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v2.1/{project_id}/cloudvolumes"
+        },
+        "EVS_CLOUD_VOLUME_DELETE": {
+          "duration": "1m",
+          "burst": 1350,
+          "description": "/v2/{project_id}/cloudvolumes/{volume_id}"
+        },
+        "EVS_CLOUD_VOLUME_UNSUBSCRIBE": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v2/{project_id}/cloudvolumes/unsubscribe"
+        },
+        "EVS_CLOUD_VOLUME_TAG_POST": {
+          "duration": "1m",
+          "burst": 1800,
+          "description": "/v2/{project_id}/cloudvolumes/{volume_id}/tags/action"
+        },
+        "SFS_VOLUME_CREATE": {
+          "duration": "1m",
+          "burst": 180,
+          "description": "/v2/{project_id}/shares"
+        },
+        "SFS_VOLUME_GET": {
+          "duration": "1m",
+          "burst": 180,
+          "description": "/v2/{project_id}/shares/{share_id}"
+        },
+        "SFS_VOLUME_DELETE": {
+          "duration": "1m",
+          "burst": 180,
+          "description": "/v2/{project_id}/shares/{share_id}"
+        },
+        "SFS_VOLUME_LIST": {
+          "duration": "1m",
+          "burst": 180,
+          "description": "/v2{project_id}/shares/detail"
+        },
+        "SFS_VOLUME_DETAIL_LIST": {
+          "duration": "1m",
+          "burst": 180,
+          "description": "/v2/{project_id}/shares/detail"
+        },
+        "SFS_ACCESS_GET": {
+          "duration": "1m",
+          "burst": 180,
+          "description": "/v2/{project_id}/shares/{share_id}/action"
+        },
+        "SFS_ACCESS_CREATE": {
+          "duration": "1m",
+          "burst": 180,
+          "description": "/v2{project_id}/shares/{share_id}/action"
+        },
+        "SFS_VOLUME_EXPAND": {
+          "duration": "1m",
+          "burst": 180,
+          "description": "/v2/{project_id}/shares/{share_id}/action"
+        },
+        "SFS_AVAILABILITY_ZONE_GET": {
+          "duration": "1m",
+          "burst": 180,
+          "description": "/v2/{project_id}/availability-zones?share_az=true"
+        },
+        "SFS_TURBO_VOLUME_GET": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/{project_id}/sfs-turbo/shares/{share_id}"
+        },
+        "SFS_TURBO_VOLUME_LIST": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/{project_id}/sfs-turbo/shares/detail"
+        },
+        "SFS_TURBO_VOLUME_EXPAND": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/{project_id}/sfs-turbo/shares/{share_id}/action"
+        },
+        "SFS_TURBO_SUB_PATH_CREATE": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/{project_id}/sfs-turbo/shares/{share_id}/fs/dir"
+        },
+        "SFS_TURBO_SUB_PATH_DELETE": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/{project_id}/sfs-turbo/shares/{share_id}/fs/dir"
+        },
+        "VOLUME_QUOTA_GET": {
+          "duration": "1m",
+          "burst": 450,
+          "description": "/v2/{project_id}/os-quota-sets/{target_project_id}"
+        },
+        "IMS_IMAGE_DETAIL_GET": {
+          "duration": "1m",
+          "burst": 1800,
+          "description": "/v2/images/{image_id}"
+        },
+        "BMS_BAREMETAL_SERVER_DETAIL_GET": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/{project_id}/baremetalservers/{server_id}"
+        },
+        "BMS_BAREMETAL_SERVER_FLAVOR_GET": {
+          "duration": "1m",
+          "burst": 450,
+          "description": "/v1/{project_id}/baremetalservers/flavors"
+        },
+        "SFS_TURBO_DIR_QUOTA_CREATE": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/%s/sfs-turbo/shares/%s/fs/dir-quota"
+        },
+        "SFS_TURBO_DIR_QUOTA_QUERY": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/%s/sfs-turbo/shares/%s/fs/dir-quota"
+        },
+        "SFS_TURBO_DIR_QUOTA_UPDATE": {
+          "duration": "1m",
+          "burst": 900,
+          "description": "/v1/%s/sfs-turbo/shares/%s/fs/dir-quota"
+        }
+      }
+    }
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-everest
+    meta.helm.sh/release-namespace: kube-system
+  creationTimestamp: "2025-08-01T08:45:38Z"
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    release: cceaddon-everest
+  name: everest-driver-th-config
+  namespace: kube-system
+  resourceVersion: "579"
+  uid: d28cd94b-2cd4-4eec-aeaa-32593a785e60
