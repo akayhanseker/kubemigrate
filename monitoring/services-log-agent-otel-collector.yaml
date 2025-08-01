@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-log-agent
+    meta.helm.sh/release-namespace: monitoring
+  creationTimestamp: "2025-08-01T08:45:39Z"
+  labels:
+    app: log-agent-otel-collector
+    app.kubernetes.io/managed-by: Helm
+    release: cceaddon-log-agent
+  name: log-agent-otel-collector
+  namespace: monitoring
+  resourceVersion: "725"
+  uid: e9eea916-77bc-4c53-a7d1-fd59ae7427af
+spec:
+  clusterIP: 10.247.67.134
+  clusterIPs:
+  - 10.247.67.134
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: fluentforward
+    port: 8006
+    protocol: TCP
+    targetPort: 8006
+  - name: grpc-otlp
+    port: 4317
+    protocol: TCP
+    targetPort: 4317
+  selector:
+    app: log-agent-otel-collector
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
