@@ -1,0 +1,938 @@
+apiVersion: v1
+data:
+  CNIProblem.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "CNIProblem",
+          "reason": "NoCNIProblem",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "CNIProblem",
+          "thresholdTimes": 1,
+          "reason": "CNIIsDown",
+          "path": "/var/paas/node-problem-detector/plugin/check_cni.sh",
+          "timeout": "3m"
+        }
+      ]
+    }
+  CRIProblem.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "CRIProblem",
+          "reason": "NoCRIProblem",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "CRIProblem",
+          "thresholdTimes": 1,
+          "reason": "CRIIsDown",
+          "path": "/var/paas/node-problem-detector/plugin/check_cri.sh",
+          "timeout": "3m"
+        }
+      ]
+    }
+  ConntrackFullProblem.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "ConntrackFullProblem",
+          "reason": "NoConntrackFullProblem",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "ConntrackFullProblem",
+          "thresholdTimes": 1,
+          "reason": "ConntrackFull",
+          "path": "/var/paas/node-problem-detector/plugin/check_conntrack-full.sh",
+          "args": [
+            "90"
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  DiskHung.json: |
+    {
+      "monitor": "extend-monitor",
+      "plugin": "disk-detector",
+      "enable": true,
+      "nodeAffinity": null,
+      "source": "node-problem-detector",
+      "metrics_reporting": true,
+      "plugin_config": {
+        "invoke_interval": "10s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false,
+        "additional": {
+          "include_root_blk": true,
+          "include_all_attached_blk": false,
+          "util_threshold": 0.99,
+          "await_threshold": "2000ms",
+          "cpu_io_wait_rate_counter": 3,
+          "cpu_io_wait_rate_threshold": 0.8,
+          "cpu_io_wait_rate_recovery_threshold": 0.2,
+          "strict_util_available_detect": false
+        },
+        "debug": false
+      },
+      "conditions": [
+        {
+          "type": "DiskHung",
+          "reason": "NoDiskHung",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "DiskHung",
+          "reason": "DiskHung"
+        }
+      ]
+    }
+  DiskProblem.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "DiskProblem",
+          "reason": "NoDiskProblem",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "DiskProblem",
+          "thresholdTimes": 1,
+          "reason": "DiskInSufficient",
+          "path": "/var/paas/node-problem-detector/plugin/check_disk_usage.sh",
+          "args": [
+            "90"
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  DiskReadonly.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "DiskReadonly",
+          "reason": "NoDiskReadonly",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "DiskReadonly",
+          "thresholdTimes": 1,
+          "reason": "DiskErrorReadWrite",
+          "path": "/var/paas/node-problem-detector/plugin/check_disk_readonly.sh",
+          "timeout": "3m"
+        }
+      ]
+    }
+  DiskSlow.json: |
+    {
+      "monitor": "extend-monitor",
+      "plugin": "disk-detector",
+      "enable": true,
+      "nodeAffinity": null,
+      "source": "node-problem-detector",
+      "metrics_reporting": true,
+      "plugin_config": {
+        "invoke_interval": "10s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false,
+        "additional": {
+          "include_root_blk": true,
+          "include_all_attached_blk": false,
+          "util_threshold": 0.99,
+          "await_threshold": "2000ms",
+          "cpu_io_wait_rate_counter": 3,
+          "cpu_io_wait_rate_threshold": 0.8,
+          "cpu_io_wait_rate_recovery_threshold": 0.2,
+          "strict_util_available_detect": false
+        },
+        "debug": false
+      },
+      "conditions": [
+        {
+          "type": "DiskSlow",
+          "reason": "NoDiskSlow",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "DiskSlow",
+          "reason": "DiskSlow"
+        }
+      ]
+    }
+  EmptyDirVolumeGroupStatusError.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "EmptyDirVolumeGroupStatusError",
+          "reason": "NoEmptyDirVolumeGroupStatusError",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "EmptyDirVolumeGroupStatusError",
+          "thresholdTimes": 1,
+          "reason": "EmptyDirVolumeGroupStatusError",
+          "path": "/var/paas/node-problem-detector/plugin/check_volume_group.sh",
+          "args": [
+            "vg-everest-localvolume-ephemeral"
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  FDProblem.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "FDProblem",
+          "reason": "NoFDProblem",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "FDProblem",
+          "thresholdTimes": 1,
+          "reason": "FDInsufficient",
+          "path": "/var/paas/node-problem-detector/plugin/check_fd.sh",
+          "args": [
+            "90"
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  FrequentContainerdRestart.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "FrequentContainerdRestart",
+          "reason": "NoFrequentContainerdRestart",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "FrequentContainerdRestart",
+          "reason": "FrequentContainerdRestart",
+          "path": "/var/paas/node-problem-detector/log-counter",
+          "args": [
+            "--journald-source=systemd",
+            "--log-path=/run/log/journal",
+            "--lookback=10m",
+            "--count=10",
+            "--pattern=Starting Cloud Container Engine Containerd Service..."
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  FrequentDockerRestart.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "FrequentDockerRestart",
+          "reason": "NoFrequentDockerRestart",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "FrequentDockerRestart",
+          "reason": "FrequentDockerRestart",
+          "path": "/var/paas/node-problem-detector/log-counter",
+          "args": [
+            "--journald-source=systemd",
+            "--log-path=/run/log/journal",
+            "--lookback=10m",
+            "--count=10",
+            "--pattern=Starting Docker Application Container Engine..."
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  FrequentKubeletRestart.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "FrequentKubeletRestart",
+          "reason": "NoFrequentKubeletRestart",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "FrequentKubeletRestart",
+          "reason": "FrequentKubeletRestart",
+          "path": "/var/paas/node-problem-detector/log-counter",
+          "args": [
+            "--journald-source=systemd",
+            "--log-path=/run/log/journal",
+            "--lookback=10m",
+            "--delay=5m",
+            "--count=10",
+            "--pattern=Started Cloud Container Engine Kubelet Service."
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  KUBELETProblem.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "KUBELETProblem",
+          "reason": "NoKUBELETProblem",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "KUBELETProblem",
+          "thresholdTimes": 1,
+          "reason": "KUBELETProblem",
+          "path": "/var/paas/node-problem-detector/health-checker",
+          "args": [
+            "--component=kubelet",
+            "--health-check-timeout=10s",
+            "--enable-repair=false"
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  KUBEPROXYProblem.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "KUBEPROXYProblem",
+          "reason": "NoKUBEPROXYProblem",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "KUBEPROXYProblem",
+          "thresholdTimes": 1,
+          "reason": "KUBEPROXYIsDown",
+          "path": "/var/paas/node-problem-detector/health-checker",
+          "args": [
+            "--component=kube-proxy",
+            "--health-check-timeout=10s",
+            "--enable-repair=false"
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  LocalPvVolumeGroupStatusError.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "LocalPvVolumeGroupStatusError",
+          "reason": "NoLocalPvVolumeGroupStatusError",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "LocalPvVolumeGroupStatusError",
+          "thresholdTimes": 1,
+          "reason": "LocalPvVolumeGroupStatusError",
+          "path": "/var/paas/node-problem-detector/plugin/check_volume_group.sh",
+          "args": [
+            "vg-everest-localvolume-persistent"
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  MemoryProblem.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "MemoryProblem",
+          "reason": "NoMemoryProblem",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "MemoryProblem",
+          "thresholdTimes": 1,
+          "reason": "MemoryInsufficient",
+          "path": "/var/paas/node-problem-detector/plugin/check_memory.sh",
+          "args": [
+            "80"
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  MountPointProblem.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "MountPointProblem",
+          "reason": "NoMountPointProblem",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "MountPointProblem",
+          "thresholdTimes": 1,
+          "reason": "MountPointProblem",
+          "path": "/usr/bin/sudo",
+          "args": [
+            "/bin/fs-checker"
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  NTPProblem.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "NTPProblem",
+          "reason": "NoNTPProblem",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "NTPProblem",
+          "thresholdTimes": 1,
+          "reason": "NTPIsDown",
+          "path": "/var/paas/node-problem-detector/plugin/check_ntp.sh",
+          "args": [
+            "8000"
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  PIDProblem.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "PIDProblem",
+          "reason": "NoPIDProblem",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "PIDProblem",
+          "thresholdTimes": 1,
+          "reason": "PIDInsufficient",
+          "path": "/var/paas/node-problem-detector/plugin/check_pid.sh",
+          "args": [
+            "90"
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  ProcessD.json: |
+    {
+      "monitor": "extend-monitor",
+      "plugin": "process-detector",
+      "enable": true,
+      "nodeAffinity": null,
+      "source": "node-problem-detector",
+      "metrics_reporting": true,
+      "plugin_config": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false,
+        "additional": {
+          "diagnosed_stats": [
+            {
+              "condition": "ProcessD",
+              "stat": "D",
+              "stat_count_threshold": 3,
+              "stat_num_threshold": 10,
+              "ignore_processes": "(heartbeat),(update),(dms_poll_task),(dev0_sq_task),(dev1_sq_task),(dev2_sq_task),(dev3_sq_task),(dev4_sq_task),(dev5_sq_task),(dev6_sq_task),(dev7_sq_task),(dev8_sq_task),(dev9_sq_task),(dev10_sq_task),(dev11_sq_task),(dev12_sq_task),(dev13_sq_task),(dev14_sq_task),(dev15_sq_task)"
+            }
+          ]
+        },
+        "debug": false
+      },
+      "conditions": [
+        {
+          "type": "ProcessD",
+          "reason": "NoProcessD",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "ProcessD",
+          "reason": "ProcessD",
+          "diagnostic": "ProcessStat"
+        }
+      ]
+    }
+  ProcessZ.json: |
+    {
+      "monitor": "extend-monitor",
+      "plugin": "process-detector",
+      "enable": true,
+      "nodeAffinity": null,
+      "source": "node-problem-detector",
+      "metrics_reporting": true,
+      "plugin_config": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false,
+        "additional": {
+          "diagnosed_stats": [
+            {
+              "condition": "ProcessZ",
+              "stat": "Z",
+              "stat_count_threshold": 3,
+              "stat_num_threshold": 10,
+              "ignore_processes": ""
+            }
+          ]
+        },
+        "debug": false
+      },
+      "conditions": [
+        {
+          "type": "ProcessZ",
+          "reason": "NoProcessZ",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "ProcessZ",
+          "reason": "ProcessZ",
+          "diagnostic": "ProcessStat"
+        }
+      ]
+    }
+  ResolvConfFileProblem.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "ResolvConfFileProblem",
+          "reason": "NoResolvConfFileProblem",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "ResolvConfFileProblem",
+          "thresholdTimes": 1,
+          "reason": "ResolvConfFileIsAbnormal",
+          "path": "/var/paas/node-problem-detector/plugin/check_resolv_conf.sh",
+          "timeout": "3m"
+        }
+      ]
+    }
+  ScheduledEvent.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": false,
+      "nodeAffinity": null,
+      "pluginConfig": {
+        "invoke_interval": "30s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 3,
+        "enable_message_change_based_condition_update": false
+      },
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "conditions": [
+        {
+          "type": "ScheduledEvent",
+          "reason": "NoScheduledEvent",
+          "message": "cce addon npd do check and report success"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "ScheduledEvent",
+          "thresholdTimes": 1,
+          "reason": "ScheduledEventWatched",
+          "path": "/var/paas/node-problem-detector/metadata-watcher",
+          "args": [
+            "--timeout=10s",
+            "--early-alarm-time=15m",
+            "--scheduled-event-type=all",
+            "--scheduled-event-endpoint=http://169.254.169.254/meta-data/latest/events/scheduled"
+          ],
+          "timeout": "3m"
+        }
+      ]
+    }
+  SpotPriceNodeReclaimNotification.json: |
+    {
+      "monitor": "custom-plugin-monitor",
+      "plugin": "custom",
+      "enable": true,
+      "nodeAffinity": {"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"cce.io/is-spot","operator":"In","values":["true"]}]}]}},
+      "source": "node-problem-detector",
+      "metrics_reporting": true,
+      "pluginConfig": {
+        "invoke_interval": "120s",
+        "timeout": "3m",
+        "max_output_length": 512,
+        "concurrency": 1,
+        "enable_message_change_based_condition_update": false
+      },
+      "conditions": [
+        {
+          "type": "SpotPriceNodeReclaimNotification",
+          "reason": "NoReclaimNodeNotification",
+          "message": "didn't receive node reclaim notification"
+        }
+      ],
+      "rules": [
+        {
+          "type": "permanent",
+          "condition": "SpotPriceNodeReclaimNotification",
+          "reason": "ReceivedReclaimNodeNotification",
+          "path": "/var/paas/node-problem-detector/plugin/check_spot_reclaim.sh",
+          "args": ["20", "/var/paas/node-problem-detector/plugin"],
+          "timeout": "20s"
+        }
+      ]
+    }
+  SystemLog.json: |
+    {
+      "monitor": "system-log-monitor",
+      "enable": true,
+      "plugin": "kmsg",
+      "logPath": "/dev/kmsg",
+      "lookback": "5m",
+      "bufferSize": 10,
+      "source": "node-problem-detector",
+      "metricsReporting": true,
+      "rules": [
+        {
+          "type": "temporary",
+          "reason": "OOMKilling",
+          "pattern": "Killed process \\d+ (.+) total-vm:\\d+kB, anon-rss:\\d+kB, file-rss:\\d+kB.*"
+        },
+        {
+          "type": "temporary",
+          "reason": "PodOOMKilling",
+          "pattern": "((Task in /kubepods(.+) killed as a result of limit of .*)|(oom-kill.*oom_memcg=/kubepods/(.+),task_memcg=.*)|(oom-kill.*oom_memcg=/kubepods.slice/(.+),task_memcg=.*))"
+        },
+        {
+          "type": "temporary",
+          "reason": "TaskHung",
+          "pattern": "task \\S+:\\w+ blocked for more than \\w+ seconds\\."
+        },
+        {
+          "type": "temporary",
+          "reason": "FilesystemIsReadOnly",
+          "pattern": "Remounting filesystem read-only"
+        }
+      ]
+    }
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-npd
+    meta.helm.sh/release-namespace: kube-system
+  creationTimestamp: "2025-08-01T08:45:38Z"
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    release: cceaddon-npd
+  name: cceaddon-npd-config
+  namespace: kube-system
+  resourceVersion: "620"
+  uid: b664761d-8ae2-4e9e-b0eb-b5add427f88f
