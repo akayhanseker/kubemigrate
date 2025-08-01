@@ -1,0 +1,592 @@
+apiVersion: v1
+data:
+  check_cni.sh: |
+    #!/bin/bash
+    # NOTE: THIS CNI SERVICE CHECK SCRIPT ASSUME THAT CNI SERVICE IS RUNNING UNDER SYSTEMD.
+
+    OK=0
+    NONOK=1
+    UNKNOWN=2
+
+    sudo [ -S /run/canal/plugins/canal-agent.sock ] || sudo [ -S /run/canal/plugins/yangtse-agent.sock ]
+    if [ $? -ne 0 ]; then
+        echo "[CNI][ERR] socket not found"
+        exit $NONOK
+    fi
+
+    for (( i = 0; i < 3; i++ )); do
+      http_code=`curl -sS --connect-timeout 5 --max-time 5 --retry 3 --retry-delay 5 http://127.0.0.1:20101/healthz -w "%{http_code}" -o /tmp/cni_check_resp 2> /tmp/cni_check_stderr`
+      ret_code=$?
+      if [[ "$ret_code" -ne 0 ]] || [[ "$http_code" != 200 ]]; then
+        if [[ $i == 2 ]]; then
+          resp="$(cat /tmp/cni_check_resp 2> /dev/null)"
+          stderr="$(cat /tmp/cni_check_stderr 2> /dev/null)"
+          echo "[CNI][ERR] check failed: error_code: $ret_code, http_code: $http_code, resp: $resp, stderr: $stderr"
+          exit $NONOK
+        fi
+        sleep 1
+      else
+        break
+      fi
+    done
+
+    echo "cni service is running"
+    exit $OK
+  check_conntrack-full.sh: |
+    #!/bin/bash
+
+    # This plugin checks for common network issues.
+    # Currently only checks if conntrack table is more than 90% used.
+    host=/
+    if [[ -d /host ]]; then
+      host=/host
+    fi
+
+    threshold_percent=$1
+
+    readonly OK=0
+    readonly NONOK=1
+    readonly UNKNOWN=2
+
+    # "nf_conntrack" replaces "ip_conntrack" - support both
+    readonly NF_CT_COUNT_PATH="$host/proc/sys/net/netfilter/nf_conntrack_count"
+    readonly NF_CT_MAX_PATH="$host/proc/sys/net/netfilter/nf_conntrack_max"
+    readonly IP_CT_COUNT_PATH="$host/proc/sys/net/ipv4/netfilter/ip_conntrack_count"
+    readonly IP_CT_MAX_PATH="$host/proc/sys/net/ipv4/netfilter/ip_conntrack_max"
+
+    if [[ -f $NF_CT_COUNT_PATH ]] && [[ -f $NF_CT_MAX_PATH ]]; then
+      readonly CT_COUNT_PATH=$NF_CT_COUNT_PATH
+      readonly CT_MAX_PATH=$NF_CT_MAX_PATH
+    elif [[ -f $IP_CT_COUNT_PATH ]] && [[ -f $IP_CT_MAX_PATH ]]; then
+      readonly CT_COUNT_PATH=$IP_CT_COUNT_PATH
+      readonly CT_MAX_PATH=$IP_CT_MAX_PATH
+    else
+      exit $UNKNOWN
+    fi
+
+    readonly conntrack_count=$(< $CT_COUNT_PATH) || exit $UNKNOWN
+    readonly conntrack_max=$(< $CT_MAX_PATH) || exit $UNKNOWN
+    readonly conntrack_usage_msg="${conntrack_count} out of ${conntrack_max}"
+
+    if (( conntrack_count > conntrack_max * $threshold_percent /100 )); then
+      echo "Conntrack table usage over $threshold_percent%: ${conntrack_usage_msg}"
+      exit $NONOK
+    else
+      echo "Conntrack table usage: ${conntrack_usage_msg}"
+      exit $OK
+    fi
+  check_cri.sh: |
+    #!/bin/bash
+    # NOTE: THIS DOCKER SERVICE CHECK SCRIPT ASSUME THAT DOCKER SERVICE IS RUNNING UNDER SYSTEMD.
+
+    OK=0
+    NONOK=1
+    UNKNOWN=2
+
+    which systemctl >/dev/null
+    if [ $? -ne 0 ]; then
+        echo "Systemd is not supported"
+        exit $UNKNOWN
+    fi
+
+    systemctl >/dev/null
+    if [ $? -ne 0 ]; then
+        echo "systemctl is not work"
+        exit $UNKNOWN
+    fi
+
+    if systemctl -q is-active docker.service; then
+        echo "Docker service is running"
+        for (( i = 0; i < 3; i++ )); do
+          http_code=`sudo curl -sS --connect-timeout 5 --max-time 5 --retry 3 --retry-delay 5  --unix-socket /var/run/docker.sock -X GET http:/v1.23/_ping -w "%{http_code}" -o /tmp/cri_check_resp 2> /tmp/cri_check_stderr`
+          ret_code=$?
+          if [[ "$ret_code" -ne 0 ]] || [[ "$http_code" != 200 ]]; then
+            if [[ $i == 2 ]]; then
+              resp="$(cat /tmp/cri_check_resp 2> /dev/null)"
+              stderr="$(cat /tmp/cri_check_stderr 2> /dev/null)"
+              echo "[DOCKER][ERR] check failed: error_code: $ret_code, http_code: $http_code, resp: $resp, stderr: $stderr"
+              exit $NONOK
+            fi
+            sleep 1
+          else
+            exit $OK
+          fi
+        done
+    fi
+
+    if systemctl -q is-active containerd; then
+        echo "containerd service is running"
+        exit $OK
+    fi
+
+    echo "CRI service is not running"
+    exit $NONOK
+  check_disk_readonly.sh: |
+    #!/bin/bash
+
+    OK=0
+    NONOK=1
+    UNKNOWN=2
+
+    host=/
+    if [[ -d /host ]]; then
+      host=/host
+    fi
+
+    function is_single_volume() {
+        cat /host/etc/fstab | grep vgpaas 1> /dev/null
+        if [[ $? == 0 ]]; then
+          echo "has vgpaas virtual group, need check mount"
+          return 1
+        else
+          echo "without vgpaas virtual group, is single volume"
+          return 0
+        fi
+    }
+
+    ls /var/paas/sys/log/cceaddon-npd 1>/dev/null
+    touch /var/paas/sys/log/cceaddon-npd/npd-disk-write-ping
+    if [ ! $? -eq 0 ]; then
+        echo "failed to write disk root"
+        exit $NONOK
+    fi
+    rm  /var/paas/sys/log/cceaddon-npd/npd-disk-write-ping
+
+    if ! is_single_volume; then
+        sudo ls $host/mnt/paas/kubernetes/kubelet 1>/dev/null
+        sudo touch $host/mnt/paas/kubernetes/kubelet/npd-disk-write-ping
+        if [ ! $? -eq 0 ]; then
+            echo "failed to write disk kubelet"
+            exit $NONOK
+        fi
+        sudo rm $host/mnt/paas/kubernetes/kubelet/npd-disk-write-ping
+
+        if [ -d $host/var/lib/docker ]; then
+          sudo ls $host/var/lib/docker 1>/dev/null
+          sudo touch $host/var/lib/docker/npd-disk-write-ping
+          if [ ! $? -eq 0 ]; then
+            echo "failed to write disk docker"
+            exit $NONOK
+          fi
+          sudo rm $host/var/lib/docker/npd-disk-write-ping
+        else
+          echo "no disk, docker, skip"
+        fi
+
+        if [ -d $host/var/lib/containerd ]; then
+          sudo ls $host/var/lib/containerd 1>/dev/null
+          sudo touch $host/var/lib/containerd/npd-disk-write-ping
+          if [ ! $? -eq 0 ]; then
+            echo "failed to write disk containerd"
+            exit $NONOK
+          fi
+          sudo rm $host/var/lib/containerd/npd-disk-write-ping
+        else
+          echo "no disk, containerd, skip"
+        fi
+    fi
+
+
+    echo "disk read write ok"
+
+    exit $OK
+  check_disk_usage.sh: |
+    #!/bin/bash
+
+    OK=0
+    NONOK=1
+    UNKNOWN=2
+
+
+    host=/
+    if [[ -d /host ]]; then
+      host=/host
+    fi
+
+    threshold_percent=$1
+
+    function check_usage(){
+      disk=$1
+      mount_path=$2
+      df_info=`sudo df -T $mount_path 2>&1| grep $mount_path | grep -v "No such file or directory"`
+      if [ "$df_info"x != x ]; then
+        usage=`echo $df_info | awk '{print $4}'`
+        available=`echo $df_info | awk '{print $5}'`
+        total=$(( $usage + $available ))
+        rate=$(( $usage  * 100 / $total ))
+        if [ $rate -gt "$threshold_percent" ]; then
+          echo "disk $disk($mount_path) meet $threshold_percent% threshold percent, usage: $usage KB($rate%), total: $total KB"
+          exit $NONOK
+        fi
+        echo "disk $disk($mount_path), usage: $usage KB($rate%), total: $total KB"
+      else
+        echo "no disk $disk($mount_path)"
+      fi
+    }
+
+    function check_mount_at_host() {
+      sudo nsenter --mount=$host/proc/1/task/1/ns/mnt df -h | grep vgpaas-share 1> /dev/null
+      if [[ $? == 0 ]]; then
+        echo "disk share is mounted at host"
+      else
+        echo "disk share is not used,check docker and kubelet"
+        sudo nsenter --mount=$host/proc/1/task/1/ns/mnt df -h | grep vgpaas-dockersys 1> /dev/null
+        if [[ $? == 0 ]]; then
+          echo "disk docker is mounted at host"
+        else
+          echo "disk docker is not mounted at host"
+          exit $NONOK
+        fi
+
+        sudo nsenter --mount=$host/proc/1/task/1/ns/mnt df -h | grep vgpaas-kubernetes 1> /dev/null
+        if [[ $? == 0 ]]; then
+          echo "disk kubelet is mounted at host"
+        else
+          echo "disk kubelet is not mounted at host"
+          exit $NONOK
+        fi
+      fi
+    }
+
+    function is_single_volume() {
+        cat /host/etc/fstab | grep vgpaas 1> /dev/null
+        if [[ $? == 0 ]]; then
+          echo "has vgpaas virtual group, need check mount"
+          return 1
+        else
+          echo "without vgpaas virtual group, is single volume"
+          return 0
+        fi
+    }
+
+    if ! is_single_volume; then
+      check_mount_at_host
+      check_usage kubelet "$host/mnt/paas/kubernetes/kubelet"
+      check_usage docker "$host/var/lib/docker"
+      check_usage containerd "$host/var/lib/containerd"
+      check_usage share  "$host/mnt/paas"
+    fi
+    check_usage root "$host"
+  check_fd.sh: |
+    #!/bin/bash
+
+    OK=0
+    NONOK=1
+    UNKNOWN=2
+
+    host=/
+    if [[ -d /host ]]; then
+      host=/host
+    fi
+
+    threshold_percent=$1
+
+    IFS=$'\t'
+    read count _ max< $host/proc/sys/fs/file-nr
+
+    limit=0
+    if [[ $max -gt 1000000000 ]]; then
+      # if max greater than 1 billion, force set threshold_percent to 1 billion to avoid computing overflow
+      limit=1000000000
+    else
+      limit=$((max*threshold_percent/100))
+    fi
+
+    if [[ $count -gt $limit ]]; then
+       echo "current fd usage is $count and max is $max"
+       exit $NONOK
+    fi
+    echo "node has no fd pressure"
+    exit $OK
+  check_memory.sh: |
+    #!/bin/bash
+
+    OK=0
+    NONOK=1
+    UNKNOWN=2
+
+    host=/
+    if [[ -d /host ]]; then
+      host=/host
+    fi
+
+    threshold_percent=$1
+
+    available=$(cat $host/proc/meminfo | grep MemAvailable | awk '{print $2}')
+    total=$(cat $host/proc/meminfo | grep MemTotal | awk '{print $2}')
+    usage=$(( $total - $available))
+    rate=$(( $usage  * 100 / $total ))
+    if [ $rate -gt "$threshold_percent" ]; then
+        echo "node memory meet $threshold_percent% threshold_percent, usage: $usage kb, total: $total kb"
+        exit $NONOK
+    fi
+    echo "node memory sufficient, usage: $usage kb($rate%), total: $total kb"
+    exit $OK
+  check_ntp.sh: |
+    #!/bin/bash
+
+    # NOTE: THIS NTP SERVICE CHECK SCRIPT ASSUME THAT NTP SERVICE IS RUNNING UNDER SYSTEMD.
+    #       THIS IS JUST AN EXAMPLE. YOU CAN WRITE YOUR OWN NODE PROBLEM PLUGIN ON DEMAND.
+
+    OK=0
+    NONOK=1
+    UNKNOWN=2
+
+    # 时钟偏移阈值，单位为ms
+    offset_threshold=$1
+
+    chrony_progress_health=1
+    ntp_progress_health=1
+
+    chrony_status=$(ps aux | grep /usr/sbin/chronyd | grep -v grep | awk '{print $8}')
+    ntp_status=$(ps aux | grep /usr/sbin/ntpd |grep -v grep | awk '{print $8}')
+
+
+    # chrony进程未启动
+    if [[ "$chrony_status" == $"" ]]; then
+        chrony_progress_health=0
+    fi
+
+    # ntp进程未启动
+    if [[ "$ntp_status" == $"" ]]; then
+        ntp_progress_health=0
+    fi
+
+    # chrony进程异常
+    chrony_status_abnormal=$(echo $chrony_status | grep -E 'T|D|Z')
+    if [[ -n $chrony_status_abnormal ]]; then
+        echo "chrony progress status error, progress status is ${chrony_status}"
+        exit $NONOK
+    fi
+
+    # ntpd进程异常
+    ntp_status_abnormal=$(echo $ntp_status | grep -E 'T|D|Z')
+    if [[ -n $ntp_status_abnormal ]]; then
+        echo "NTP progress status error, progress status is ${ntp_status}"
+        exit $NONOK
+    fi
+
+    # chrony增强检查
+    if [[ $chrony_progress_health -eq 1 ]]; then
+        # chrony_return_code0 表示chronyc sources指令中所有Reach值和,Reach和不为0或空表示服务同步或启动
+        chrony_return_code0=$(chronyc sources | awk '{print $5}' | sed '/^$/d'| awk '{sum += $1}END{print sum}')
+        # chrony_return_code 表示已同步行的chronyc sources中的Reach值,不等于0或空时表示同步完成
+        chrony_return_code=$(chronyc sources | grep "*" | awk '{print $5}')
+        # 正在获取远端服务
+        if [[ $chrony_return_code != $"0" && $chrony_return_code != $"" ]]; then
+            str=$(chronyc -c tracking)
+            IFS=","
+            arr=($str)
+            # arr[4]为当前时间偏移量,单位为s,转换为ms
+            chrony_offset=$(awk 'BEGIN{ printf("%lf",'${arr[4]#-}' * 1000) }')
+            cmp=$(awk 'BEGIN{ print ('$chrony_offset'>'$offset_threshold') }')
+            if [[ $cmp -eq 1 ]]; then
+                echo "The time drift exceeds threshold ${offset_threshold} ms, current is ${chrony_offset} ms"
+                exit $NONOK
+            else
+                echo 'Chrony service is running'
+                exit $OK
+            fi
+        fi
+
+        # 连接状态判断
+        if [[ $chrony_return_code == $"0" || $chrony_return_code == $"" ]]; then
+            # 连接失败
+            if [[ $chrony_return_code0 == $"0" || $chrony_return_code0 == $"" ]]; then
+                echo "Chrony server can not connect"
+                exit $NONOK
+            # 正在同步
+            else
+                echo "Connecting to Chrony server"
+                exit $OK
+            fi
+        fi
+    fi
+
+    # ntp增强检查
+    if [[ $ntp_progress_health -eq 1 ]]; then
+
+        ntp_return_code=$(ntpq -p | grep "*" | awk '{print $7}' | sed 's/[^0-9]//g')
+        # 此分支为当前已确定server ip,即已有确定*server ip
+        if [[ $ntp_return_code != $"" && $ntp_return_code != $"0" ]]; then
+            # ntp_offset为当前时间偏移量，单位为ms
+            ntp_offset=$(ntpq -p | grep "*" | awk '{print $9}' | sed 's/[^0-9\.\]//g')
+            cmp=$(awk 'BEGIN{ print ('$ntp_offset'>'$offset_threshold') }')
+            if [[ $cmp -eq 1 ]]; then
+                echo "The time drift exceeds threshold ${offset_threshold} ms, current is ${ntp_offset} ms"
+                exit $NONOK
+            else
+                echo 'NTP service is running'
+                exit $OK
+            fi
+        fi
+
+        #ntp_return_code0代表ntp启动状态,ntp_return_code0>0代表正在启动
+        ntp_return_code0=$(ntpq -p | awk '{print $7}' | sed 's/[^0-9]//g'| sed '/^$/d'| awk '{sum += $1}END{print sum}')
+        # 连接ntp服务器失败
+        if [[ $ntp_return_code == $"" && ($ntp_return_code0 == $"" || $ntp_return_code0 == $"0") ]]; then
+            echo "NTP server can not connect"
+            exit $NONOK
+        fi
+
+        # ntp服务正在获取远端服务
+        if [[ $ntp_return_code == $"" && $ntp_return_code0 != $"0" ]]; then
+            echo "Connecting to NTP server"
+            exit $OK
+        fi
+
+    fi
+
+    echo "NTP/Chrony service is not running"
+    exit $NONOK
+  check_pid.sh: |
+    #!/bin/bash
+
+    OK=0
+    NONOK=1
+    UNKNOWN=2
+
+    host=/
+    if [[ -d /host ]]; then
+      host=/host
+    fi
+
+    threshold_percent=$1
+
+    total_pid_max=$(< $host/proc/sys/kernel/pid_max) || exit $UNKNOWN
+    total_threads_max=$(< $host/proc/sys/kernel/threads-max) || exit $UNKNOWN
+    total=0
+    if [ $total_pid_max -lt $total_threads_max ]; then
+      total=$total_pid_max
+    else
+      total=$total_threads_max
+    fi
+
+    IFS=' /'
+    read _ _ _ _ nprocs _ _<"$host/proc/loadavg" || exit $UNKNOWN
+    rate=$(( $nprocs  * 100 / $total ))
+    if [ $rate -gt $threshold_percent ]; then
+      echo "node pid meet $threshold_percent% threshold percent, usage: $nprocs, total: $total(pid_max:$total_pid_max, threads-max:$total_threads_max)"
+      exit $NONOK
+    fi
+    echo "node pid sufficient, usage: $nprocs, total: $total(pid_max:$total_pid_max, threads-max:$total_threads_max)"
+    exit $OK
+  check_resolv_conf.sh: |
+    #!/bin/bash
+
+    OK=0
+    NONOK=1
+
+    host=/
+    if [[ -d /host ]]; then
+      host=/host
+    fi
+
+    resolv_conf_file=$host/etc/resolv.conf
+
+    if [[ ! -f $resolv_conf_file ]] ; then
+      exit ${NONOK}
+    fi
+    if ! grep -q "nameserver" "$resolv_conf_file"; then
+      exit ${NONOK}
+    fi
+    exit ${OK}
+  check_spot_reclaim.sh: "#!/bin/bash\n\nTIMEOUT=${1:-'20'}\nSCRIPT_DIR=${2:-'/var/paas/node-problem-detector/plugin'}\n\nOK=0\nNONOK=1\nUNKNOWN=2\n\nERROR_MESSAGE_FILE=/tmp/spot_reclaim_errors\nRESP_BODY_FILE=/tmp/spot_reclaim_resp_body\n\nPYTHON=/usr/bin/python3\n\nHTTP_CODE=$(curl
+    -sS --max-time $TIMEOUT -w \"%{http_code}\" -o $RESP_BODY_FILE http://169.254.169.254/openstack/latest/spot/instance-action
+    2> $ERROR_MESSAGE_FILE)\nif [ $? -ne 0 ]; then\n\tERROR_MESSAGE=$(< $ERROR_MESSAGE_FILE)\n\techo
+    \"curl returned error: $ERROR_MESSAGE\"\n\texit $UNKNOWN\nfi\n\ncase $HTTP_CODE
+    in\n\t200 | 500)\n\t\t# use python to parse JSON and check result\n\t\texec $PYTHON
+    $SCRIPT_DIR/check_spot_result.py $HTTP_CODE $RESP_BODY_FILE\n\t\t;;\n\n\t404)\n\t\techo
+    \"spot data is not found\"\n\t\texit $OK\n\t\t;;\n\n\t*)\n\t\tRESP_BODY=$(< $RESP_BODY_FILE)\n\t\techo
+    \"unexpected HTTP status code $HTTP_CODE, response body: $RESP_BODY\"\n\t\texit
+    $UNKNOWN\n\t\t;;\nesac\n"
+  check_spot_result.py: "import sys\nimport json\n\nOK, NOT_OK, UNKNOWN = 0, 1, 2\n\n\ndef
+    check_result(code:int, filename: str) -> int:\n\ttry:\n\t\twith open(filename,
+    'r') as file:\n\t\t\tdata = file.read()\n\t\t\tresp_body = json.loads(data)\n\n\t\t\tif
+    code == 200:\n\t\t\t\treturn check_200_result(code, resp_body, data)\n\t\t\telif
+    code == 500:\n\t\t\t\treturn check_500_result(code, resp_body, data)\n\t\t\telse:\n\t\t\t\tprint(f'unexpected
+    HTTP status code {code}')\n\t\t\t\treturn UNKNOWN\n\texcept Exception as e:\n\t\tprint(e)\n\t\treturn
+    UNKNOWN\n\n\ndef check_200_result(code: int, resp_body: dict, raw_body: str) ->
+    int:\n\tif 'action' in resp_body and resp_body['action'] == 'terminate':\n\t\tdelete_time
+    = ''\n\t\tif 'timestamp' in resp_body:\n\t\t\tdelete_time = f' at {resp_body[\"timestamp\"]}'\n\n\t\tprint(f'received
+    reclaim notification, node will be deleted{delete_time}')\n\t\treturn NOT_OK\n\telse:\n\t\tprint(f'unexpected
+    response, HTTP status code: {code}, response body: {raw_body}')\n\t\treturn UNKNOWN\n\n\ndef
+    check_500_result(code: int, resp_body: dict, raw_body: str) -> int:\n\tif 'error_msg'
+    not in resp_body:\n\t\tprint(f'unexpected response, HTTP status code: {code},
+    response body: {raw_body}')\n\t\treturn UNKNOWN\n\n\terr_msg = json.loads(resp_body['error_msg'])\n\tif
+    'status_code'in err_msg and err_msg['status_code'] == 404:\n\t\tprint('spot data
+    is not found')\n\t\treturn OK\n\telse:\n\t\tprint(f'unexpected response, HTTP
+    status code: {code}, response body: {raw_body}')\n\t\treturn UNKNOWN\n\n\ndef
+    main() -> int:\n\tif len(sys.argv) != 3:\n\t\tprint('arguments should be: <status_code>
+    <response_body_filename>')\n\t\treturn UNKNOWN\n\n\ttry:\n\t\tstatus_code, resp_body_filename
+    = int(sys.argv[1]), sys.argv[2]\n\texcept ValueError:\n\t\tprint('failed to parse
+    status code')\n\t\treturn UNKNOWN\n\n\treturn check_result(status_code, resp_body_filename)\n\n\nif
+    __name__ == '__main__':\n\tsys.exit(main())\n"
+  check_volume_group.sh: |
+    #!/bin/bash
+
+    OK=0
+    NONOK=1
+    UNKNOWN=2
+
+    function checkVG(){
+        vgAttr=$1
+        # verify vg attribute format
+        if [[ ! "${vgAttr}" =~ [-a-z]{6} ]]; then
+            echo "vg invalid attribute format: ${vgAttr}"
+            return
+        fi
+
+        # "partial" indicates lack of one or more pvs
+        # check vg is not partial
+        res=`echo ${vgAttr:3:1}`
+        if [[ "${res}"x == "p"x ]]; then
+            echo "vg is partial: ${vgAttr}"
+            return
+        fi
+
+        return
+    }
+
+    vg_arr=$@
+    vg_arr_whitelist=("vg-everest-localvolume-ephemeral" "vg-everest-localvolume-persistent")
+    status=${OK}
+
+    for vg in ${vg_arr[@]}
+    do
+        if [[ ! "${vg_arr_whitelist[@]}" =~ "${vg}" ]]; then
+            echo "volume group name ${vg} invalid"
+            continue
+        fi
+
+        vgAttr=`sudo nsenter --mount=/host/proc/1/task/1/ns/mnt vgs -o vg_name,vg_attr | grep "${vg}" | awk '{print $2}'`
+        if [[ -z "${vgAttr}" ]]; then
+            echo "volume group ${vg} not exist"
+            continue
+        fi
+
+        res=`checkVG ${vgAttr}`
+        if [[ "${res}" =~ "vg invalid attribute format" ]]; then
+            # if verify vg attribute format failed, status is not error
+            echo "check volume group ${vg} warning, ${res}"
+            status=${UNKNOWN}
+        elif [[ "${res}" =~ "vg is partial" ]]; then
+            echo "check volume group ${vg} failed, ${res}"
+            status=${NONOK}
+        fi
+    done
+
+    exit ${status}
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-npd
+    meta.helm.sh/release-namespace: kube-system
+  creationTimestamp: "2025-08-01T08:45:38Z"
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    release: cceaddon-npd
+  name: cceaddon-npd-scripts
+  namespace: kube-system
+  resourceVersion: "621"
+  uid: 1896511a-d143-45db-95ae-9803502b43a5
