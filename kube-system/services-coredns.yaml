@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-coredns
+    meta.helm.sh/release-namespace: kube-system
+    prometheus.io/port: "9153"
+    prometheus.io/scrape: "true"
+  creationTimestamp: "2025-08-01T08:45:38Z"
+  labels:
+    app: coredns
+    app.kubernetes.io/managed-by: Helm
+    k8s-app: coredns
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: CoreDNS
+    release: cceaddon-coredns
+  name: coredns
+  namespace: kube-system
+  resourceVersion: "664"
+  uid: 3bc5eddc-322d-49c3-8937-b6aac881daa6
+spec:
+  clusterIP: 10.247.3.10
+  clusterIPs:
+  - 10.247.3.10
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: dns
+    port: 53
+    protocol: UDP
+    targetPort: 5353
+  - name: dns-tcp
+    port: 53
+    protocol: TCP
+    targetPort: 5353
+  - name: health
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: coredns
+    k8s-app: coredns
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
