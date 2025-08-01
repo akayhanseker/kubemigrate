@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2025-08-01T10:27:23Z"
+  labels:
+    managed-by: prometheus-operator
+    prometheus-name: server
+  name: prometheus-server-rulefiles-0
+  namespace: monitoring
+  ownerReferences:
+  - apiVersion: monitoring.coreos.com/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Prometheus
+    name: server
+    uid: 621f6634-3432-4432-9c45-9df7e4dc9f65
+  resourceVersion: "23629"
+  uid: fadba836-1e16-40c2-8509-78f0ed7cea9e
