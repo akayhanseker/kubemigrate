@@ -1,0 +1,171 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    localdns.cce.io/servers: '["169.254.20.10"]'
+    node-local-dns-webhook.k8s.io/status: injected
+  creationTimestamp: "2025-08-01T10:38:53Z"
+  generateName: cceaddon-nginx-ingress-default-backend-b695944b8-
+  labels:
+    app: nginx-ingress
+    component: default-backend
+    pod-template-hash: b695944b8
+    release: cceaddon-nginx-ingress
+  name: cceaddon-nginx-ingress-default-backend-b695944b8-2m8jc
+  namespace: demo-app
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: cceaddon-nginx-ingress-default-backend-b695944b8
+    uid: 1212324c-71a2-48a8-ad38-0d2e747e343f
+  resourceVersion: "28805"
+  uid: 4ea12e49-5679-4fb2-be00-1ef4bd445a8c
+spec:
+  containers:
+  - image: swr.tr-west-1.myhuaweicloud.com/hwofficial/defaultbackend:1.5
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /healthz
+        port: 8080
+        scheme: HTTP
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    name: nginx-ingress-default-backend
+    ports:
+    - containerPort: 8080
+      name: http
+      protocol: TCP
+    readinessProbe:
+      failureThreshold: 6
+      httpGet:
+        path: /healthz
+        port: 8080
+        scheme: HTTP
+      periodSeconds: 5
+      successThreshold: 1
+      timeoutSeconds: 5
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 500m
+        memory: 500Mi
+    securityContext:
+      runAsUser: 65534
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-hpkfc
+      readOnly: true
+  dnsConfig:
+    nameservers:
+    - 169.254.20.10
+    - 10.247.3.10
+    options:
+    - name: single-request-reopen
+      value: ""
+    - name: timeout
+      value: "2"
+    - name: ndots
+      value: "5"
+    searches:
+    - demo-app.svc.cluster.local
+    - svc.cluster.local
+    - cluster.local
+  dnsPolicy: None
+  enableServiceLinks: true
+  nodeName: 192.168.0.35
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  serviceAccount: cceaddon-nginx-ingress
+  serviceAccountName: cceaddon-nginx-ingress
+  terminationGracePeriodSeconds: 60
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 60
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 60
+  volumes:
+  - name: kube-api-access-hpkfc
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:38:54Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:38:53Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:38:54Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:38:54Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:38:53Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://e29d4b1536c4d3531149e5ebe88f2a63ec343e8ea79b889c39120da10edbb565
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/defaultbackend:1.5
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/defaultbackend@sha256:45da5e0bd72b794385205dd69d59f92d60a7317a964f288a343fcc69f7dc2663
+    lastState: {}
+    name: nginx-ingress-default-backend
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:38:54Z"
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-hpkfc
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 192.168.0.35
+  hostIPs:
+  - ip: 192.168.0.35
+  phase: Running
+  podIP: 10.0.1.135
+  podIPs:
+  - ip: 10.0.1.135
+  qosClass: Guaranteed
+  startTime: "2025-08-01T10:38:53Z"
