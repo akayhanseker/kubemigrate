@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubernetes.io/elb.class: performance
+    kubernetes.io/elb.id: 81623259-6683-45c0-ae9a-77608fef6e73
+    kubernetes.io/elb.pass-through: "true"
+    meta.helm.sh/release-name: cceaddon-nginx-ingress
+    meta.helm.sh/release-namespace: demo-app
+  creationTimestamp: "2025-08-01T10:36:36Z"
+  finalizers:
+  - service.kubernetes.io/load-balancer-cleanup
+  labels:
+    app: nginx-ingress
+    app.kubernetes.io/managed-by: Helm
+    chart: nginx-ingress-3.0.34
+    component: controller
+    heritage: Helm
+    release: cceaddon-nginx-ingress
+  name: cceaddon-nginx-ingress-controller
+  namespace: demo-app
+  resourceVersion: "27809"
+  uid: f6bdff53-886f-4a1e-89ef-9cfded1ce073
+spec:
+  allocateLoadBalancerNodePorts: true
+  clusterIP: 10.247.176.158
+  clusterIPs:
+  - 10.247.176.158
+  externalTrafficPolicy: Local
+  healthCheckNodePort: 30305
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  loadBalancerIP: 192.168.0.10
+  ports:
+  - name: http
+    nodePort: 30766
+    port: 80
+    protocol: TCP
+    targetPort: http
+  - name: https
+    nodePort: 31540
+    port: 443
+    protocol: TCP
+    targetPort: https
+  selector:
+    app: nginx-ingress
+    component: controller
+    release: cceaddon-nginx-ingress
+  sessionAffinity: None
+  type: LoadBalancer
+status:
+  loadBalancer:
+    ingress:
+    - ip: 192.168.0.10
+      ipMode: VIP
+    - ip: 213.250.129.251
+      ipMode: VIP
