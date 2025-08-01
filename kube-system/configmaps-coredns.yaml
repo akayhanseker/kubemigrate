@@ -1,0 +1,39 @@
+apiVersion: v1
+data:
+  Corefile: |-
+    .:5353 {
+        bind {$POD_IP}
+        cache 30 {
+            servfail 5s
+        }
+        errors
+        health {$POD_IP}:8080
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            fallthrough in-addr.arpa ip6.arpa
+        }
+        loadbalance round_robin
+        prometheus {$POD_IP}:9153
+        forward . /etc/resolv.conf {
+            policy random
+        }
+        reload
+        ready {$POD_IP}:8081
+    }
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-coredns
+    meta.helm.sh/release-namespace: kube-system
+  creationTimestamp: "2025-08-01T08:45:38Z"
+  labels:
+    app: coredns
+    app.kubernetes.io/managed-by: Helm
+    k8s-app: coredns
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: CoreDNS
+    release: cceaddon-coredns
+  name: coredns
+  namespace: kube-system
+  resourceVersion: "655"
+  uid: 3d2a472c-4cbc-4857-aed6-6df4075ff2d8
