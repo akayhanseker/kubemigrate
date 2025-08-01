@@ -1,0 +1,30 @@
+apiVersion: v1
+data:
+  ciaAdaptorStatus: "true"
+  createDefaultEvent: "true"
+  createDefaultEventToAOM: "true"
+  createDefaultStdout: "true"
+  deleteResidualCR: "true"
+  ltsAuditStreamID: ""
+  ltsEventStreamID: ""
+  ltsGroupID: ""
+  ltsKubeApiserverStreamID: ""
+  ltsKubeControllerManagerStreamID: ""
+  ltsKubeSchedulerStreamID: ""
+  ltsStdoutStreamID: ""
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-log-agent
+    meta.helm.sh/release-namespace: monitoring
+  creationTimestamp: "2025-08-01T08:45:39Z"
+  labels:
+    app: log-agent-log-operator
+    app.kubernetes.io/managed-by: Helm
+    chart: log-agent-1.7.3
+    heritage: Helm
+    release: cceaddon-log-agent
+  name: log-agent-log-operator-status
+  namespace: monitoring
+  resourceVersion: "23729"
+  uid: a47eef45-f539-4309-b5f7-90a785e10434
