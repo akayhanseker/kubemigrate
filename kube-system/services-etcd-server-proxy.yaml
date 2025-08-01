@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2025-08-01T08:44:50Z"
+  labels:
+    app: etcd-server-proxy
+    proxy-exporter: metrics
+    version: v1
+  name: etcd-server-proxy
+  namespace: kube-system
+  resourceVersion: "310"
+  uid: c9a9d1c0-7117-4a50-b0d5-defef01a8205
+spec:
+  clusterIP: 10.247.0.6
+  clusterIPs:
+  - 10.247.0.6
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: https
+    port: 4001
+    protocol: TCP
+    targetPort: 10451
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
