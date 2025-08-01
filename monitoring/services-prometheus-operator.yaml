@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-cie-collector
+    meta.helm.sh/release-namespace: monitoring
+  creationTimestamp: "2025-08-01T08:45:47Z"
+  labels:
+    app: prometheus-operator
+    app.kubernetes.io/managed-by: Helm
+    release: cceaddon-cie-collector
+  name: prometheus-operator
+  namespace: monitoring
+  resourceVersion: "861"
+  uid: 22d9d474-3b48-42a4-b268-1c234bfc3ec0
+spec:
+  clusterIP: 10.247.253.113
+  clusterIPs:
+  - 10.247.253.113
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: http
+  - name: ready
+    port: 8081
+    protocol: TCP
+    targetPort: 8081
+  selector:
+    app: prometheus-operator
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
