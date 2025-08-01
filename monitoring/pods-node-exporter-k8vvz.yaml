@@ -1,0 +1,279 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2025-08-01T10:27:04Z"
+  generateName: node-exporter-
+  labels:
+    app: node-exporter
+    component: node-exporter
+    controller-revision-hash: 69bc977cc6
+    pod-template-generation: "1"
+    release: cceaddon-cie-collector
+  name: node-exporter-k8vvz
+  namespace: monitoring
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: DaemonSet
+    name: node-exporter
+    uid: 4e1371e1-4b42-4d92-a922-e6ca0c6146ee
+  resourceVersion: "23824"
+  uid: c1c843ac-249c-45af-b814-c14f7ad4c2fd
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchFields:
+          - key: metadata.name
+            operator: In
+            values:
+            - 192.168.0.35
+  containers:
+  - args:
+    - --path.procfs=/host/proc
+    - --path.sysfs=/host/sys
+    - --path.rootfs=/host/root
+    - --no-collector.ipvs
+    - --no-collector.watchdog
+    - --web.listen-address=$(POD_IP):9100
+    - --no-collector.netclass
+    - --no-collector.arp
+    - --no-collector.thermal_zone
+    - --no-collector.schedstat
+    - --no-collector.softnet
+    - --no-collector.udp_queues
+    - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|mnt/paas/kubernetes/kubelet/pods/.+|var/lib/docker/.+)($|/)
+    env:
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/node-exporter:3.12.1
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /
+        port: 9100
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    name: node-exporter
+    ports:
+    - containerPort: 9100
+      hostPort: 9100
+      name: metrics
+      protocol: TCP
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /
+        port: 9100
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 200m
+        memory: 100Mi
+    securityContext:
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+        - DAC_OVERRIDE
+      readOnlyRootFilesystem: true
+    startupProbe:
+      failureThreshold: 5
+      httpGet:
+        path: /
+        port: 9100
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /host/proc
+      name: proc
+      readOnly: true
+    - mountPath: /host/sys
+      name: sys
+      readOnly: true
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+    - mountPath: /host/root
+      mountPropagation: HostToContainer
+      name: root
+      readOnly: true
+    - mountPath: /host/root/tmp
+      mountPropagation: HostToContainer
+      name: hosttmp
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-r67kp
+      readOnly: true
+  dnsConfig:
+    options:
+    - name: timeout
+      value: "2"
+    - name: single-request-reopen
+      value: ""
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  hostNetwork: true
+  hostPID: true
+  imagePullSecrets:
+  - name: default-secret
+  nodeName: 192.168.0.35
+  preemptionPolicy: PreemptLowerPriority
+  priority: 2000001000
+  priorityClassName: system-node-critical
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - operator: Exists
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/disk-pressure
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/memory-pressure
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/pid-pressure
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/unschedulable
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/network-unavailable
+    operator: Exists
+  volumes:
+  - hostPath:
+      path: /etc/localtime
+      type: ""
+    name: localtime
+  - hostPath:
+      path: /proc
+      type: ""
+    name: proc
+  - hostPath:
+      path: /sys
+      type: ""
+    name: sys
+  - hostPath:
+      path: /
+      type: ""
+    name: root
+  - hostPath:
+      path: /tmp
+      type: ""
+    name: hosttmp
+  - name: kube-api-access-r67kp
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:18Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:04Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:33Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:33Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:04Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://17b734c6f5ac895a55d99ab4a39decc519c0488bd7fc43ec1ef8c57292d61af6
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/node-exporter:3.12.1
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/node-exporter@sha256:d847250a89f7ede30f73d7ab549f1e917112182f757b03455c7d46f61990d5cb
+    lastState: {}
+    name: node-exporter
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:27:17Z"
+    volumeMounts:
+    - mountPath: /host/proc
+      name: proc
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /host/sys
+      name: sys
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /host/root
+      name: root
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /host/root/tmp
+      name: hosttmp
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-r67kp
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 192.168.0.35
+  hostIPs:
+  - ip: 192.168.0.35
+  phase: Running
+  podIP: 192.168.0.35
+  podIPs:
+  - ip: 192.168.0.35
+  qosClass: Burstable
+  startTime: "2025-08-01T10:27:04Z"
