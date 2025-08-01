@@ -1,0 +1,180 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    localdns.cce.io/servers: '["169.254.20.10"]'
+    node-local-dns-webhook.k8s.io/status: injected
+  creationTimestamp: "2025-08-01T10:34:12Z"
+  generateName: cartservice-5bc89885d5-
+  labels:
+    app: cartservice
+    pod-template-hash: 5bc89885d5
+  name: cartservice-5bc89885d5-bvlks
+  namespace: demo-app
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: cartservice-5bc89885d5
+    uid: 1a0ede0c-7347-4890-8a62-fffac5fe763a
+  resourceVersion: "26986"
+  uid: 857e676b-0f18-421f-a018-8664cad00030
+spec:
+  containers:
+  - env:
+    - name: REDIS_ADDR
+      valueFrom:
+        configMapKeyRef:
+          key: redis_addr
+          name: redis-config
+    image: swr.tr-west-1.myhuaweicloud.com/cce-training/cartservice:latest
+    imagePullPolicy: Always
+    livenessProbe:
+      failureThreshold: 3
+      grpc:
+        port: 7070
+        service: ""
+      initialDelaySeconds: 15
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    name: server
+    ports:
+    - containerPort: 7070
+      protocol: TCP
+    readinessProbe:
+      failureThreshold: 3
+      grpc:
+        port: 7070
+        service: ""
+      initialDelaySeconds: 15
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    resources:
+      limits:
+        cpu: 300m
+        memory: 128Mi
+      requests:
+        cpu: 200m
+        memory: 64Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      privileged: false
+      readOnlyRootFilesystem: true
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-545c6
+      readOnly: true
+  dnsConfig:
+    nameservers:
+    - 169.254.20.10
+    - 10.247.3.10
+    options:
+    - name: single-request-reopen
+      value: ""
+    - name: timeout
+      value: "2"
+    - name: ndots
+      value: "5"
+    searches:
+    - demo-app.svc.cluster.local
+    - svc.cluster.local
+    - cluster.local
+  dnsPolicy: None
+  enableServiceLinks: true
+  nodeName: 192.168.0.121
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 5
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-545c6
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:17Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:12Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:43Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:43Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:34:12Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://9664aaa8cc4005f8bd4fd3a4b15f818f1cbacfef813a6c9ae1a2742800206abf
+    image: swr.tr-west-1.myhuaweicloud.com/cce-training/cartservice:latest
+    imageID: swr.tr-west-1.myhuaweicloud.com/cce-training/cartservice@sha256:92db114731260a557dec3fb714baaaaf791862ada3cb92ee42d2ea9ca6e0334e
+    lastState: {}
+    name: server
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:34:16Z"
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-545c6
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 192.168.0.121
+  hostIPs:
+  - ip: 192.168.0.121
+  phase: Running
+  podIP: 10.0.0.3
+  podIPs:
+  - ip: 10.0.0.3
+  qosClass: Burstable
+  startTime: "2025-08-01T10:34:12Z"
