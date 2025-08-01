@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2025-08-01T08:44:50Z"
+  labels:
+    app: kube-controller-proxy
+    proxy-exporter: metrics
+    version: v1
+  name: kube-controller-proxy
+  namespace: kube-system
+  resourceVersion: "312"
+  uid: d5c6bb8e-746e-4f5e-a902-986fe34e100e
+spec:
+  clusterIP: 10.247.0.8
+  clusterIPs:
+  - 10.247.0.8
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: https
+    port: 10257
+    protocol: TCP
+    targetPort: 10451
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
