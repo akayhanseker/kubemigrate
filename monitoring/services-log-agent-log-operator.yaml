@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-log-agent
+    meta.helm.sh/release-namespace: monitoring
+  creationTimestamp: "2025-08-01T08:45:39Z"
+  labels:
+    app: log-agent-log-operator
+    app.kubernetes.io/managed-by: Helm
+    release: cceaddon-log-agent
+  name: log-agent-log-operator
+  namespace: monitoring
+  resourceVersion: "729"
+  uid: b9857a90-469b-4985-9d45-de52f6e40bf0
+spec:
+  clusterIP: 10.247.48.156
+  clusterIPs:
+  - 10.247.48.156
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: webhook
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: log-agent-log-operator
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
