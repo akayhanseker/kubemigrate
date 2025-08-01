@@ -1,0 +1,399 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    checksum/config: 3618cc4b575327bbd716b0382391775ed62f378e99b295ba665a9a316eaf8bcc
+    checksum/scripts: d681aa83be66f2c0f8fb6bddf85987dd3ff6eb2ad72fcebcb13122e48f5f1a00
+    metrics.alpha.kubernetes.io/custom-endpoints: '[{"api":"prometheus","path":"/metrics","port":"19901","names":""}]'
+    prometheus.io/port: "19901"
+    prometheus.io/scrape: "true"
+    scheduler.alpha.kubernetes.io/critical-pod: ""
+  creationTimestamp: "2025-08-01T10:27:04Z"
+  generateName: cceaddon-npd-
+  labels:
+    app.kubernetes.io/instance: cceaddon-npd
+    app.kubernetes.io/name: npd
+    controller-revision-hash: 699dcddcb
+    pod-template-generation: "1"
+    release: cceaddon-npd
+  name: cceaddon-npd-8kl56
+  namespace: kube-system
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: DaemonSet
+    name: cceaddon-npd
+    uid: 1624a399-4f44-47d3-898f-c483e7f8b904
+  resourceVersion: "23947"
+  uid: 8c386617-2212-4e7a-b38c-e4175bc07682
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchFields:
+          - key: metadata.name
+            operator: In
+            values:
+            - 192.168.0.35
+  containers:
+  - command:
+    - /bin/sh
+    - -c
+    - /var/paas/node-problem-detector/node-problem-detector --logtostderr --config-dir=/config
+      --address=$(POD_IP) --port=19900 --prometheus-address=$(POD_IP) --v=2 1>>/var/paas/sys/log/cceaddon-npd/cceaddon-npd.log
+      2>&1
+    env:
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.hostIP
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: spec.nodeName
+    - name: KUBEPROXY_PATH
+      value: /livez
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/base-node-problem-detector:1.19.20
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 5
+      httpGet:
+        path: /healthz
+        port: 19900
+        scheme: HTTP
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    name: npd
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /healthz
+        port: 19900
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    resources:
+      limits:
+        cpu: 300m
+        memory: 300Mi
+      requests:
+        cpu: 30m
+        memory: 100Mi
+    securityContext:
+      capabilities:
+        drop:
+        - ALL
+      privileged: true
+      readOnlyRootFilesystem: true
+      runAsUser: 10000
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/paas/node-problem-detector/plugin
+      name: script
+    - mountPath: /tmp
+      name: tmpdir
+    - mountPath: /var/log
+      name: log
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+    - mountPath: /config
+      name: npd-config
+    - mountPath: /plugin
+      name: npd-scripts
+    - mountPath: /run/
+      mountPropagation: HostToContainer
+      name: run
+    - mountPath: /run/faillock
+      name: faillock
+    - mountPath: /host
+      mountPropagation: HostToContainer
+      name: disk-root
+      readOnly: true
+    - mountPath: /host/var/lib/containerd
+      mountPropagation: HostToContainer
+      name: containerd
+    - mountPath: /host/var/lib/docker
+      mountPropagation: HostToContainer
+      name: docker
+    - mountPath: /dev/kmsg
+      name: kmsg
+      readOnly: true
+    - mountPath: /var/paas/sys/log/cceaddon-npd/
+      name: logfile
+    - mountPath: /opt/cloud/cce/.cce-package/packagesConfig
+      name: packagesconfig
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-8dv8l
+      readOnly: true
+  dnsConfig:
+    options:
+    - name: single-request-reopen
+      value: ""
+    - name: timeout
+      value: "2"
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  hostNetwork: true
+  hostPID: true
+  initContainers:
+  - command:
+    - /bin/sh
+    - -c
+    - mkdir -p /var/paas/sys/log/cceaddon-npd; chmod 750 /var/paas/sys/log/cceaddon-npd;
+      touch /var/paas/sys/log/cceaddon-npd/cceaddon-npd.log; chown -R paas:paas /var/paas/sys/log/cceaddon-npd;
+      chmod 640 /var/paas/sys/log/cceaddon-npd/*.log; cd /var/paas/node-problem-detector/plugin;for
+      file in `ls /plugin` ; do echo $file; cat /plugin/$file > $file; done; chmod
+      -R 750 .;chown -R paas:paas .;
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/base-node-problem-detector:1.19.20
+    imagePullPolicy: IfNotPresent
+    name: npd-bootstrap
+    resources:
+      limits:
+        cpu: 30m
+        memory: 100Mi
+      requests:
+        cpu: 30m
+        memory: 100Mi
+    securityContext:
+      runAsUser: 0
+      seccompProfile:
+        type: Unconfined
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/paas/node-problem-detector/plugin
+      name: script
+    - mountPath: /var/paas/sys/log/cceaddon-npd
+      name: logfile
+    - mountPath: /plugin
+      name: npd-scripts
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-8dv8l
+      readOnly: true
+  nodeName: 192.168.0.35
+  preemptionPolicy: PreemptLowerPriority
+  priority: 2000001000
+  priorityClassName: system-node-critical
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 10000
+    seccompProfile:
+      type: RuntimeDefault
+  serviceAccount: cceaddon-npd
+  serviceAccountName: cceaddon-npd
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - operator: Exists
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/disk-pressure
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/memory-pressure
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/pid-pressure
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/unschedulable
+    operator: Exists
+  - effect: NoSchedule
+    key: node.kubernetes.io/network-unavailable
+    operator: Exists
+  volumes:
+  - emptyDir: {}
+    name: script
+  - emptyDir: {}
+    name: tmpdir
+  - hostPath:
+      path: /var/log/
+      type: ""
+    name: log
+  - hostPath:
+      path: /etc/localtime
+      type: FileOrCreate
+    name: localtime
+  - hostPath:
+      path: /run/
+      type: ""
+    name: run
+  - hostPath:
+      path: /dev/kmsg
+      type: ""
+    name: kmsg
+  - hostPath:
+      path: /var/paas/sys/log/kubernetes
+      type: ""
+    name: logfile
+  - hostPath:
+      path: /opt/cloud/cce/.cce-package/packagesConfig
+      type: FileOrCreate
+    name: packagesconfig
+  - configMap:
+      defaultMode: 416
+      name: cceaddon-npd-config
+    name: npd-config
+  - configMap:
+      defaultMode: 416
+      name: cceaddon-npd-scripts
+    name: npd-scripts
+  - hostPath:
+      path: /
+      type: ""
+    name: disk-root
+  - emptyDir: {}
+    name: faillock
+  - hostPath:
+      path: /var/lib/docker
+      type: ""
+    name: docker
+  - hostPath:
+      path: /var/lib/containerd
+      type: ""
+    name: containerd
+  - name: kube-api-access-8dv8l
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:28Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:29Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:47Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:47Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-08-01T10:27:04Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://6826ae6e66acf67a411c7b481ed47fde30c76afa5e2590cc9f7af2b02984d25c
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/base-node-problem-detector:1.19.20
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/base-node-problem-detector@sha256:0f31b92612502e1146c8895351db45fb99d96109bd61a88bdf3d64ceba1ab6ec
+    lastState: {}
+    name: npd
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-08-01T10:27:29Z"
+    volumeMounts:
+    - mountPath: /var/paas/node-problem-detector/plugin
+      name: script
+    - mountPath: /tmp
+      name: tmpdir
+    - mountPath: /var/log
+      name: log
+    - mountPath: /etc/localtime
+      name: localtime
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /config
+      name: npd-config
+    - mountPath: /plugin
+      name: npd-scripts
+    - mountPath: /run/
+      name: run
+    - mountPath: /run/faillock
+      name: faillock
+    - mountPath: /host
+      name: disk-root
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /host/var/lib/containerd
+      name: containerd
+    - mountPath: /host/var/lib/docker
+      name: docker
+    - mountPath: /dev/kmsg
+      name: kmsg
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/paas/sys/log/cceaddon-npd/
+      name: logfile
+    - mountPath: /opt/cloud/cce/.cce-package/packagesConfig
+      name: packagesconfig
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-8dv8l
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 192.168.0.35
+  hostIPs:
+  - ip: 192.168.0.35
+  initContainerStatuses:
+  - containerID: containerd://f362c3f009230b8d91addd63fafdec6bae877f87e9e423dc28eda40ab6cf20a2
+    image: swr.tr-west-1.myhuaweicloud.com/hwofficial/base-node-problem-detector:1.19.20
+    imageID: swr.tr-west-1.myhuaweicloud.com/hwofficial/base-node-problem-detector@sha256:0f31b92612502e1146c8895351db45fb99d96109bd61a88bdf3d64ceba1ab6ec
+    lastState: {}
+    name: npd-bootstrap
+    ready: true
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: containerd://f362c3f009230b8d91addd63fafdec6bae877f87e9e423dc28eda40ab6cf20a2
+        exitCode: 0
+        finishedAt: "2025-08-01T10:27:28Z"
+        reason: Completed
+        startedAt: "2025-08-01T10:27:27Z"
+    volumeMounts:
+    - mountPath: /var/paas/node-problem-detector/plugin
+      name: script
+    - mountPath: /var/paas/sys/log/cceaddon-npd
+      name: logfile
+    - mountPath: /plugin
+      name: npd-scripts
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-8dv8l
+      readOnly: true
+      recursiveReadOnly: Disabled
+  phase: Running
+  podIP: 192.168.0.35
+  podIPs:
+  - ip: 192.168.0.35
+  qosClass: Burstable
+  startTime: "2025-08-01T10:27:04Z"
