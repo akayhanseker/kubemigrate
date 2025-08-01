@@ -1,0 +1,169 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    meta.helm.sh/release-name: cceaddon-node-local-dns
+    meta.helm.sh/release-namespace: kube-system
+  creationTimestamp: "2025-08-01T08:45:39Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    k8s-app: node-local-dns-admission-controller
+    release: cceaddon-node-local-dns
+  name: node-local-dns-admission-controller
+  namespace: kube-system
+  resourceVersion: "23811"
+  uid: 55182bf5-e8b7-4a6d-8a76-3ec4be741ff7
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: node-local-dns-admission-controller
+  strategy:
+    rollingUpdate:
+      maxSurge: 10%
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        k8s-app: node-local-dns-admission-controller
+        release: cceaddon-node-local-dns
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/role
+                operator: NotIn
+                values:
+                - virtual-kubelet
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: k8s-app
+                  operator: In
+                  values:
+                  - node-local-dns-admission-controller
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: k8s-app
+                operator: In
+                values:
+                - node-local-dns-admission-controller
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - command:
+        - /bin/bash
+        - -c
+        - /var/paas/local-dns/local-dns-admission-controller --coredns-addr=10.247.3.10
+          --localdns-addr=169.254.20.10 --cluster-domain=cluster.local --insecure-skip-tls-verify=true
+        env:
+        - name: PAAS_CRYPTO_PATH
+          value: /srv/kubernetes
+        image: swr.tr-west-1.myhuaweicloud.com/hwofficial/local-dns-admission-controller:1.6.66
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /healthz
+            port: 9091
+            scheme: HTTPS
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: webhook
+        ports:
+        - containerPort: 9090
+          name: webhook
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 9091
+            scheme: HTTPS
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 3
+        resources:
+          limits:
+            cpu: 250m
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 512Mi
+        securityContext:
+          runAsUser: 10000
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /srv/kubernetes/root.key
+          name: srvkube-root
+        - mountPath: /srv/kubernetes/common_shared.key
+          name: srvkube-common
+        - mountPath: /admission.local.config/certificates
+          name: admission-cert
+      dnsPolicy: ClusterFirst
+      priorityClassName: system-cluster-critical
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 10000
+      serviceAccount: node-local-dns
+      serviceAccountName: node-local-dns
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 60
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 60
+      volumes:
+      - hostPath:
+          path: /var/paas/srv/kubernetes/root.key
+          type: ""
+        name: srvkube-root
+      - hostPath:
+          path: /var/paas/srv/kubernetes/common_shared.key
+          type: ""
+        name: srvkube-common
+      - name: admission-cert
+        secret:
+          defaultMode: 416
+          secretName: node-local-dns-admission-secret
+status:
+  availableReplicas: 2
+  conditions:
+  - lastTransitionTime: "2025-08-01T10:27:25Z"
+    lastUpdateTime: "2025-08-01T10:27:25Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2025-08-01T10:27:25Z"
+    lastUpdateTime: "2025-08-01T10:27:32Z"
+    message: ReplicaSet "node-local-dns-admission-controller-54868cc9d7" has successfully
+      progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 1
+  readyReplicas: 2
+  replicas: 2
+  updatedReplicas: 2
