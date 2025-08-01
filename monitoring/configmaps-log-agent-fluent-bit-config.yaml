@@ -1,0 +1,179 @@
+apiVersion: v1
+data:
+  fluent-bit-containerd.conf: |
+    [SERVICE]
+        Flush              1
+        Daemon             Off
+        Log_Level          warn
+        Parsers_File       /fluent-bit/etc/parsers.conf
+        plugins_file       /fluent-bit/etc/plugins/plugins.conf
+        HTTP_Server        On
+        HTTP_Listen        ${POD_IP}
+        HTTP_Port          2020
+        scheduler.cap      180
+        scheduler.base     2
+    [INPUT]
+        Alias in_tail_default-stdout
+        Buffer_Chunk_Size 128k
+        Buffer_Max_Size 512k
+        DB /db/default-stdout.db
+        Mem_Buf_Limit 40MB
+        Name tail
+        Path /var/log/containers-symlinks/default-stdout/*/*/*/*/container-stdout*
+        Refresh_Interval 5
+        Skip_Empty_Lines On
+        Skip_Long_Lines On
+        Tag kube.*
+        multiline.parser docker, cri
+        threaded On
+    [FILTER]
+        Name kubernetes
+        Match kube.*
+        Buffer_Size 16MB
+        Kube_URL https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}
+        Kube_Tag_Prefix kube.
+        Regex_Parser kubernetes_parser
+        Annotations Off
+        Labels Off
+        Cache_Use_Docker_Id On
+        Use_Kubelet true
+        Kubelet_Port ${KUBELET_PORT}
+        Kubelet_Host ${NODE_IP}
+    [FILTER]
+        Name nest
+        Match kube.*
+        Operation lift
+        Nested_under kubernetes
+    [FILTER]
+        Name modify
+        Match kube*
+        Add node_ip ${NODE_IP}
+        Remove_wildcard annotations
+        Remove docker_id
+        Remove container_hash
+        Remove container_image
+        Remove_regex .*\..*
+        Add cluster_id ${CLUSTER_ID}
+        Add cluster_name kubemigrate
+    [FILTER]
+        Name record_modifier
+        Match kube**.container-stdout.log
+        Record path_file stdout.log
+    [OUTPUT]
+        Match kube*
+        Name lts
+        Retry_Limit 10
+        Workers 8
+        access_endpoint https://100.125.8.20:8102
+        compress gzip
+        credential /fluent-bit/credential/security.credential
+        decrypt_material_path /etc/cipher
+        lts_log_level warn
+        project_id b19971231bdf44d4b926977511fd59e1
+        region tr-west-1
+        tag_regexp ^kube(node)?\.var\.log\.containers-symlinks\.(?P<log_config>[^.]*)\.(?P<log_group_id>[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})\.(?P<log_stream_id>[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})\.([^\.]+\.[^\.]+\.)?(((container-file_[^_]+_|host-file_[^_]+_)(?P<log_path_file>.*))|container-stdout\.log)$
+        watch_dir /fluent-bit/credential
+  fluent-bit.conf: |
+    [SERVICE]
+        Flush              1
+        Daemon             Off
+        Log_Level          warn
+        Parsers_File       /fluent-bit/etc/parsers.conf
+        plugins_file       /fluent-bit/etc/plugins/plugins.conf
+        HTTP_Server        On
+        HTTP_Listen        ${POD_IP}
+        HTTP_Port          2020
+        scheduler.cap      180
+        scheduler.base     2
+    [INPUT]
+        Alias in_tail_default-stdout
+        Buffer_Chunk_Size 128k
+        Buffer_Max_Size 512k
+        DB /db/default-stdout.db
+        Mem_Buf_Limit 40MB
+        Name tail
+        Path /var/log/containers-symlinks/default-stdout/*/*/*/*/container-stdout*
+        Refresh_Interval 5
+        Skip_Empty_Lines On
+        Skip_Long_Lines On
+        Tag kube.*
+        multiline.parser docker, cri
+        threaded On
+    [FILTER]
+        Name kubernetes
+        Match kube.*
+        Buffer_Size 16MB
+        Kube_URL https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}
+        Kube_Tag_Prefix kube.
+        Regex_Parser kubernetes_parser
+        Annotations Off
+        Labels Off
+        Cache_Use_Docker_Id On
+        Use_Kubelet true
+        Kubelet_Port ${KUBELET_PORT}
+        Kubelet_Host ${NODE_IP}
+    [FILTER]
+        Name nest
+        Match kube.*
+        Operation lift
+        Nested_under kubernetes
+    [FILTER]
+        Name modify
+        Match kube*
+        Add node_ip ${NODE_IP}
+        Remove_wildcard annotations
+        Remove docker_id
+        Remove container_hash
+        Remove container_image
+        Remove_regex .*\..*
+        Add cluster_id ${CLUSTER_ID}
+        Add cluster_name kubemigrate
+    [FILTER]
+        Name record_modifier
+        Match kube**.container-stdout.log
+        Record path_file stdout.log
+    [OUTPUT]
+        Match kube*
+        Name lts
+        Retry_Limit 10
+        Workers 8
+        access_endpoint https://100.125.8.20:8102
+        compress gzip
+        credential /fluent-bit/credential/security.credential
+        decrypt_material_path /etc/cipher
+        lts_log_level warn
+        project_id b19971231bdf44d4b926977511fd59e1
+        region tr-west-1
+        tag_regexp ^kube(node)?\.var\.log\.containers-symlinks\.(?P<log_config>[^.]*)\.(?P<log_group_id>[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})\.(?P<log_stream_id>[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})\.([^\.]+\.[^\.]+\.)?(((container-file_[^_]+_|host-file_[^_]+_)(?P<log_path_file>.*))|container-stdout\.log)$
+        watch_dir /fluent-bit/credential
+  parsers.conf: |2
+
+    [PARSER]
+        Name docker
+        Format json
+        Time_Key time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L
+        Time_Keep On
+    [PARSER]
+        Name cri
+        Format regex
+        Regex ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
+        Time_Key time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+        Time_Keep On
+    [PARSER]
+        Name kubernetes_parser
+        Format regex
+        Regex var\.log\.containers\-symlinks\.[^\.]+\.([^\.]+\.[^\.]+\.)?(?<namespace_name>[^_]+)_[^_]*_[^_]+_(?<pod_name>[a-z0-9](?:[-a-z0-9]*[a-z0-9])?(?:\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)\.(?<container_name>.+)-(?<docker_id>[a-z0-9]{64})
+        Time_Key time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L
+        Time_Keep On
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2025-08-01T10:27:37Z"
+  labels:
+    app: log-operator
+  name: log-agent-fluent-bit-config
+  namespace: monitoring
+  resourceVersion: "23863"
+  uid: d4deadf8-0072-4008-945e-b929deffa7f3
