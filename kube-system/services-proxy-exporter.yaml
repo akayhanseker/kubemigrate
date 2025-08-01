@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2025-08-01T08:44:50Z"
+  labels:
+    app: proxy-exporter
+    proxy-exporter: metrics
+    version: v1
+  name: proxy-exporter
+  namespace: kube-system
+  resourceVersion: "304"
+  uid: 1eac5ae3-f99b-4b00-99c6-c86a1c9aacb4
+spec:
+  clusterIP: 10.247.0.5
+  clusterIPs:
+  - 10.247.0.5
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: https
+    port: 10451
+    protocol: TCP
+    targetPort: 10451
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
