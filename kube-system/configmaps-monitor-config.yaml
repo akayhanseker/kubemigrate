@@ -1,0 +1,23 @@
+apiVersion: v1
+data:
+  aom-eps-id: "0"
+  aom-instance-id: b95bcf8f-43a8-46b5-a510-5247f95a187d
+  aom-project-id: b19971231bdf44d4b926977511fd59e1
+  default-scrape-interval: 15s
+  prometheus-connection-secret: cia-aom-app-secret
+  prometheus-mode: lightweight
+  prometheus-namespace: monitoring
+  prometheus-plugin-version: 3.12.1
+immutable: false
+kind: ConfigMap
+metadata:
+  annotations:
+    openvessel.io/monitoring-resource-policy: delete
+    openvessel.io/monitoring-version: v1.0.0
+  creationTimestamp: "2025-08-01T10:27:23Z"
+  labels:
+    openvessel.io/monitoring-resource: monitor-config
+  name: monitor-config
+  namespace: kube-system
+  resourceVersion: "23620"
+  uid: fbacc9d0-83f9-43ed-94bd-969a1f479019
