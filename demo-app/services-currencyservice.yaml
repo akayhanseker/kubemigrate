@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"currencyservice"},"name":"currencyservice","namespace":"demo-app"},"spec":{"ports":[{"name":"grpc","port":7000,"targetPort":7000}],"selector":{"app":"currencyservice"},"type":"ClusterIP"}}
+  creationTimestamp: "2025-08-01T10:34:12Z"
+  labels:
+    app: currencyservice
+  name: currencyservice
+  namespace: demo-app
+  resourceVersion: "26595"
+  uid: 1f8b003b-6bb6-4a87-94dc-3cc3e989de57
+spec:
+  clusterIP: 10.247.195.155
+  clusterIPs:
+  - 10.247.195.155
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: grpc
+    port: 7000
+    protocol: TCP
+    targetPort: 7000
+  selector:
+    app: currencyservice
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
