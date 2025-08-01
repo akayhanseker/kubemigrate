@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  master: v1.31.4-r0
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2025-08-01T08:45:05Z"
+  name: cluster-versions
+  namespace: kube-system
+  resourceVersion: "419"
+  uid: b53f429d-fa9c-4fa9-99d9-4684ce0a92e0
